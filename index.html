@@ -41,6 +41,7 @@ footer{font-size:13px;color:#7f93c4;margin-top:26px}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#fff;color:var(--navy);padding:10px 18px;border-radius:12px;font-weight:800;opacity:0;pointer-events:none;transition:opacity .2s}
 .toast.on{opacity:1}
 @media (min-width:700px){body{font-size:18px}h1{font-size:38px}}
+.toc{margin:0;padding-left:20px}.toc li{padding:4px 0}a{color:var(--yel)}.tbl{width:100%;border-collapse:collapse;font-size:15px}.tbl th,.tbl td{border-top:1px solid var(--line);padding:8px 6px;text-align:left;vertical-align:top}.tbl td:first-child{font-weight:800;white-space:nowrap}.src{padding-left:20px;margin:0 0 12px}.src li{padding:3px 0}
 </style>
 </head>
 <body>
@@ -50,6 +51,19 @@ footer{font-size:13px;color:#7f93c4;margin-top:26px}
 <h1>오늘의 프롬프트<br><em>복사해서 그대로</em> 붙여 넣으세요</h1>
 <p class="lead">직장인이 바로 쓰는 AI 업무 지시문이에요. 코드·전문용어 없이, 회사 업무 말로만 썼어요.</p>
 
+<nav class="card" id="all">
+  <h2>영상별 자료 바로가기</h2>
+  <p class="meta">릴스·캐러셀 댓글로 약속한 자료는 전부 이 페이지에 있어요. DM이 늦게 오면 여기서 바로 가져가세요.</p>
+  <ul class="toc">
+    <li><a href="#weekly-report">주간보고 맡겼더니 · 프롬프트 5개</a></li>
+    <li><a href="#cowork">클로드 코워크 · 첫날 써볼 프롬프트 5개</a></li>
+    <li><a href="#c1-week">이번 주 모르면 야근 10/12 · 공식 출처 5개 + 요약표</a></li>
+    <li><a href="#gemini-free">무료 제미나이 · 덜 틀리게 쓰는 지시문 5개</a></li>
+    <li><a href="#free-buzz">공짜 AI 도구 Buzz · 다운로드 링크 + 회의록 지시문</a></li>
+  </ul>
+</nav>
+
+<div id="weekly-report"></div>
 <section class="card" id="p1">
   <span class="tag">맡겼더니 #1</span>
   <h2>주간보고 + 임원 회의 슬라이드 초안</h2>
@@ -97,6 +111,87 @@ footer{font-size:13px;color:#7f93c4;margin-top:26px}
   </details>
 </section>
 
+<section class="card" id="cowork">
+  <span class="tag">AI 판결 · 클로드 코워크</span>
+  <h2>코워크 첫날 써볼 프롬프트 5개</h2>
+  <p class="meta">폴더·파일을 맡기는 일에 써요. 회사 자료는 보안 규정 확인 후 사용하세요.</p>
+  <details open><summary>1/5 폴더 정리 → 이번 주 할 일 표</summary>
+    <pre id="c1">이 폴더 파일들을 읽고, 파일마다 한 줄 요약 + 내가 이번 주에 처리해야 할 것만 표로 만들어 줘. 마감이 적힌 건 마감순으로. 모르는 건 지어내지 말고 "확인 필요"라고 적어 줘.</pre>
+    <button type="button" data-copy="c1">복사</button></details>
+  <details><summary>2/5 영수증 정리</summary>
+    <pre id="c2">첨부한 영수증 사진에서 날짜·가게·금액·카테고리를 뽑아 표로 만들어 줘. 안 보이는 글자는 추측하지 말고 "판독 불가"라고 적어 줘.</pre>
+    <button type="button" data-copy="c2">복사</button></details>
+  <details><summary>3/5 받은 메일 정리</summary>
+    <pre id="c3">이번 주 받은 메일 목록에서 답장 필요 / 참고만 / 무시 세 칸으로 나눠 줘. 답장 필요한 건 초안도 써 줘.</pre>
+    <button type="button" data-copy="c3">복사</button></details>
+  <details><summary>4/5 회의 준비</summary>
+    <pre id="c4">내일 회의 안건과 첨부 자료를 읽고, 내가 받을 만한 질문 5개와 답변 초안을 만들어 줘.</pre>
+    <button type="button" data-copy="c4">복사</button></details>
+  <details><summary>5/5 문서 비교</summary>
+    <pre id="c5">두 계약서(또는 기획서) 버전을 비교해서 바뀐 문장만 표로 보여 줘: 원래 / 바뀐 것 / 의미.</pre>
+    <button type="button" data-copy="c5">복사</button></details>
+</section>
+
+<section class="card" id="c1-week">
+  <span class="tag">이번 주 모르면 야근 · 10/12</span>
+  <h2>AI 업데이트 5개, 한 장 요약표 + 공식 출처</h2>
+  <table class="tbl">
+    <tr><th>판결</th><th>무엇</th><th>직장인 한 줄</th></tr>
+    <tr><td>거르라</td><td>무료 Gemini (10/9~)</td><td>구독 없는 개인 계정은 Flash-Lite만. 숫자 들어간 문서는 맡기지 마세요.</td></tr>
+    <tr><td>써라</td><td>Gemini 스킬</td><td>매주 쓰는 요청 1개를 저장해 두면 복붙이 끝나요(Workspace 순차 배포).</td></tr>
+    <tr><td>써라</td><td>ChatGPT iOS 스캔</td><td>종이 여러 장을 PDF 하나로 바로 첨부. 민감 서류는 빼고요.</td></tr>
+    <tr><td>거르라</td><td>ChatGPT Pro 500 (월 $500)</td><td>일반 문서·메일 업무엔 과해요. 지금 플랜으로 먼저 충분한지 확인.</td></tr>
+    <tr><td>아직</td><td>ChatGPT Finances</td><td>미국 Free·Go 대상 발표. 한국 안내는 아직 못 찾았어요.</td></tr>
+  </table>
+  <p class="meta" style="margin-top:12px">공식 출처 (10/6 확인, 이후 바뀔 수 있어요)</p>
+  <ol class="src">
+    <li><a href="https://support.google.com/gemini/answer/17004136?hl=ko" rel="noopener">Gemini 고객센터 · 요금제별 모델 사용 가능 여부</a></li>
+    <li><a href="https://workspaceupdates.googleblog.com/2026/09/skills-gemini-app-workspace.html" rel="noopener">Google Workspace Updates · Gemini 앱·Workspace 스킬 소개</a></li>
+    <li><a href="https://workspaceupdates.googleblog.com/2026/10/weekly-recap-10-02-2026.html" rel="noopener">Google Workspace Updates · 10/2 주간 요약</a></li>
+    <li><a href="https://help.openai.com/en/articles/6825453-chatgpt-release-notes" rel="noopener">OpenAI ChatGPT 릴리스 노트 (iOS 스캔 10/1 · Pro 500 9/29 · Finances 10/2)</a></li>
+  </ol>
+</section>
+
+<section class="card" id="gemini-free">
+  <span class="tag">AI 판결 · 무료 제미나이</span>
+  <h2>무료 제미나이(Flash-Lite)로도 덜 틀리게 쓰는 지시문 5개</h2>
+  <p class="meta">요금제별 모델 표 원문: <a href="https://support.google.com/gemini/answer/17004136?hl=ko" rel="noopener">support.google.com/gemini/answer/17004136</a></p>
+  <details open><summary>1/5 숫자 지키기</summary>
+    <pre id="g1">아래 자료에 있는 숫자만 써서 요약해 줘. 자료에 없는 숫자는 쓰지 말고 "확인 필요"라고 적어 줘. 마지막에 쓴 숫자마다 자료 속 원문 문장을 옆에 붙여 줘.</pre>
+    <button type="button" data-copy="g1">복사</button></details>
+  <details><summary>2/5 먼저 묻게 하기</summary>
+    <pre id="g2">바로 쓰지 말고, 이 보고서를 쓰기 전에 나한테 확인할 질문 3개만 먼저 해 줘.</pre>
+    <button type="button" data-copy="g2">복사</button></details>
+  <details><summary>3/5 쪼개 맡기기</summary>
+    <pre id="g3">이 문서를 3부분으로 나눠서 한 부분씩 요약해 줘. 다음 부분은 내가 "계속"이라고 하면 해 줘.</pre>
+    <button type="button" data-copy="g3">복사</button></details>
+  <details><summary>4/5 검산</summary>
+    <pre id="g4">방금 쓴 답에서 숫자·날짜·이름만 뽑아 표로 만들고, 원래 자료와 다른 게 있으면 표시해 줘.</pre>
+    <button type="button" data-copy="g4">복사</button></details>
+  <details><summary>5/5 교차 확인 (다른 AI에 붙여 넣기)</summary>
+    <pre id="g5">이 요약을 읽고 빠졌거나 틀렸을 만한 부분 3개를 찾아 줘.</pre>
+    <button type="button" data-copy="g5">복사</button></details>
+</section>
+
+<section class="card" id="free-buzz">
+  <span class="tag">오늘의 공짜 AI 도구 · Buzz</span>
+  <h2>회의 녹음을 글자로, 무료·오픈소스</h2>
+  <ul class="src">
+    <li><a href="https://github.com/chidiwilliams/buzz" rel="noopener">공식 페이지 (github.com/chidiwilliams/buzz, MIT)</a></li>
+    <li><a href="https://chidiwilliams.github.io/buzz/docs/installation" rel="noopener">설치 안내 (공식 문서)</a></li>
+  </ul>
+  <ol class="steps">
+    <li>맥은 .dmg를 받아 응용 프로그램으로 끌어놓기(최신판은 애플 실리콘 맥, 인텔 맥은 1.4.5까지). 윈도우는 서명 안 된 앱이라 경고가 떠요 → '추가 정보' → '실행'(공식 안내). 회사 PC는 IT팀 먼저.</li>
+    <li>녹음·영상 파일을 창에 끌어놓기</li>
+    <li>언어 '한국어' + 모델 크기: 처음엔 small, 느리면 tiny, 정확도가 아쉬우면 turbo나 large. 처음 한 번은 모델을 받느라 인터넷이 필요해요.</li>
+    <li>TXT로 내보내기(자막용 SRT도 돼요)</li>
+  </ol>
+  <p class="meta">회의록 정리 지시문 (받아쓴 TXT를 AI에 붙여 넣고)</p>
+  <pre id="b1">이 회의 받아쓰기에서 결정된 것과 할 일만 뽑아 표로 만들어 줘. 열: 할 일 / 담당 / 마감 / 원문 근거 문장. 담당·마감이 없으면 "미정". 받아쓰기라 틀린 단어가 있을 수 있으니, 숫자와 사람 이름은 "확인 필요"로 표시해 줘.</pre>
+  <button type="button" data-copy="b1">복사</button>
+  <p class="note">회의 녹음은 참석자에게 먼저 알리고 하세요. 광고·제휴 아니에요.</p>
+</section>
+
 <section class="card" id="newsletter">
   <h2>이번 주 모르면 야근 (뉴스레터)</h2>
   <p class="meta">매주 월요일, 이번 주 AI 소식 중 직장인이 알아야 할 것만 공식 발표 기준으로 정리해요. (준비 중)</p>
@@ -128,6 +223,8 @@ document.querySelectorAll('button[data-copy]').forEach(function(b){
     function fallback(){var r=document.createRange();r.selectNodeContents(el);var s=getSelection();s.removeAllRanges();s.addRange(r);try{document.execCommand('copy');done()}catch(e){}}
   });
 });
+
+(function(){var ep=new URLSearchParams(location.search).get('ep');var el=ep&&document.getElementById(ep);if(el){el.querySelectorAll('details').forEach(function(d){d.open=true});setTimeout(function(){el.scrollIntoView({block:'start'})},50)}})();
 </script>
 </body>
 </html>
