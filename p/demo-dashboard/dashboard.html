@@ -1,0 +1,605 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>한빛상사 2026년 3분기 매출 대시보드</title>
+<style>
+:root {
+  color-scheme: dark;
+  --page: #0d0d0d;
+  --surface-1: #1a1a19;
+  --surface-2: #232321;
+  --text-primary: #ffffff;
+  --text-secondary: #c3c2b7;
+  --text-muted: #898781;
+  --grid: #2c2c2a;
+  --baseline: #383835;
+  --border: rgba(255,255,255,0.10);
+  --series-1: #3987e5;
+  --series-1-dim: #1c3a5e;
+  --series-1-soft: rgba(57,135,229,0.16);
+  --good: #0ca30c;
+  --warning: #fab219;
+  --critical: #e66767;
+  --radius: 14px;
+  font-family: system-ui, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", "Segoe UI", sans-serif;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--page); color: var(--text-primary); font-size: 14px; line-height: 1.5; }
+.wrap { max-width: 1200px; margin: 0 auto; padding: 20px 16px 48px; }
+header h1 { font-size: 22px; margin: 0 0 4px; font-weight: 700; letter-spacing: -0.01em; }
+header p { margin: 0; color: var(--text-secondary); font-size: 13px; }
+header .badge { display: inline-flex; gap: 6px; align-items: center; margin-top: 10px; padding: 4px 10px; border-radius: 999px;
+  background: rgba(250,178,25,0.10); color: var(--warning); font-size: 12px; border: 1px solid rgba(250,178,25,0.25); text-decoration: none; }
+
+/* 필터 */
+.filters { position: sticky; top: 0; z-index: 20; margin: 16px -16px 0; padding: 10px 16px; background: rgba(13,13,13,0.92);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); }
+.frow { display: flex; align-items: center; gap: 8px; overflow-x: auto; scrollbar-width: none; padding: 3px 0; }
+.frow::-webkit-scrollbar { display: none; }
+.flabel { flex: none; width: 34px; color: var(--text-muted); font-size: 12px; }
+.chip { flex: none; appearance: none; border: 1px solid var(--border); background: var(--surface-1); color: var(--text-secondary);
+  font: inherit; font-size: 13px; padding: 5px 12px; border-radius: 999px; cursor: pointer; min-height: 32px; transition: background .15s, color .15s, border-color .15s; }
+.chip:hover { border-color: rgba(255,255,255,0.25); color: var(--text-primary); }
+.chip[aria-pressed="true"] { background: var(--series-1); border-color: var(--series-1); color: #fff; font-weight: 600; }
+.chip.all[aria-pressed="true"] { background: var(--surface-2); border-color: rgba(255,255,255,0.3); color: var(--text-primary); }
+.fmeta { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 4px; font-size: 12px; color: var(--text-muted); flex-wrap: wrap; }
+.fmeta button { appearance: none; background: none; border: 0; color: var(--series-1); font: inherit; cursor: pointer; padding: 4px 0; }
+.toggle { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; color: var(--text-secondary); }
+.toggle input { accent-color: var(--series-1); width: 16px; height: 16px; margin: 0; }
+
+/* KPI */
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 18px; }
+.card { background: var(--surface-1); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; min-width: 0; }
+.kpi .label { color: var(--text-secondary); font-size: 13px; }
+.kpi .value { font-size: 28px; font-weight: 650; margin-top: 4px; letter-spacing: -0.02em; white-space: nowrap; }
+.kpi .value small { font-size: 15px; font-weight: 500; color: var(--text-secondary); margin-left: 2px; }
+.kpi .sub { color: var(--text-muted); font-size: 12px; margin-top: 4px; }
+.kpi.hero { grid-column: span 1; }
+.kpi.hero .value { font-size: 40px; }
+
+/* 차트 그리드 */
+.grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 12px; margin-top: 12px; }
+.span-12 { grid-column: span 12; } .span-7 { grid-column: span 7; } .span-5 { grid-column: span 5; } .span-6 { grid-column: span 6; }
+.card h2 { font-size: 15px; margin: 0; font-weight: 650; }
+.card .desc { color: var(--text-muted); font-size: 12px; margin: 2px 0 12px; }
+.card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.seg { display: inline-flex; background: var(--page); border: 1px solid var(--border); border-radius: 8px; padding: 2px; flex: none; }
+.seg button { appearance: none; border: 0; background: none; color: var(--text-muted); font: inherit; font-size: 12px; padding: 4px 10px; border-radius: 6px; cursor: pointer; min-height: 28px; }
+.seg button[aria-pressed="true"] { background: var(--surface-2); color: var(--text-primary); }
+
+svg text { font-family: inherit; }
+.axis { fill: var(--text-muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+.chart-note { display: flex; gap: 6px; align-items: flex-start; margin-top: 8px; font-size: 12px; color: var(--text-secondary); }
+.chart-note .ic { color: var(--warning); flex: none; }
+
+/* 가로 막대 */
+.hbars { display: flex; flex-direction: column; gap: 4px; }
+.hbar { display: grid; grid-template-columns: 92px 1fr 84px; align-items: center; gap: 10px; padding: 6px 4px; border-radius: 8px;
+  cursor: pointer; background: none; border: 0; color: inherit; font: inherit; text-align: left; width: 100%; }
+.hbar:hover, .hbar:focus-visible { background: var(--surface-2); outline: none; }
+.hbar .name { color: var(--text-primary); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hbar .track { height: 14px; position: relative; }
+.hbar .fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--series-1); border-radius: 0 4px 4px 0;
+  transition: width .6s cubic-bezier(.2,.8,.2,1), background .2s; min-width: 2px; }
+.hbar.dim .fill { background: var(--series-1-dim); }
+.hbar.dim .name, .hbar.dim .val { color: var(--text-muted); }
+.hbar .val { text-align: right; font-size: 13px; font-variant-numeric: tabular-nums; color: var(--text-secondary); white-space: nowrap; }
+.hbar .val b { color: var(--text-primary); font-weight: 600; }
+.hint { font-size: 11px; color: var(--text-muted); margin-top: 8px; }
+
+/* 영업사원 순위 */
+.rank { display: flex; flex-direction: column; }
+.ritem { display: grid; grid-template-columns: 28px 1fr auto; gap: 4px 12px; align-items: center; padding: 10px 4px; border-top: 1px solid var(--grid); }
+.ritem:first-child { border-top: 0; }
+.ritem .no { font-size: 15px; font-weight: 700; color: var(--text-muted); text-align: center; grid-row: span 2; }
+.ritem.top .no { color: var(--text-primary); }
+.ritem .who { font-size: 14px; font-weight: 600; }
+.ritem .who span { font-weight: 400; color: var(--text-muted); font-size: 12px; margin-left: 6px; }
+.ritem .amt { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+.ritem .bar { height: 6px; background: var(--grid); border-radius: 3px; overflow: hidden; }
+.ritem .bar i { display: block; height: 100%; background: var(--series-1); border-radius: 0 3px 3px 0; transition: width .6s cubic-bezier(.2,.8,.2,1); }
+.ritem .meta { text-align: right; font-size: 12px; color: var(--text-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* 표 */
+details.card > summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+details.card > summary::-webkit-details-marker { display: none; }
+details.card > summary::after { content: "펼치기 ▾"; font-size: 12px; color: var(--series-1); flex: none; }
+details.card[open] > summary::after { content: "접기 ▴"; }
+.tablewrap { overflow: auto; max-height: 480px; margin-top: 12px; border-radius: 8px; border: 1px solid var(--grid); }
+table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+th, td { padding: 7px 10px; text-align: left; white-space: nowrap; border-bottom: 1px solid var(--grid); }
+th { position: sticky; top: 0; background: var(--surface-2); color: var(--text-secondary); font-weight: 600; z-index: 1; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+tr.imp td.sales { color: var(--warning); }
+.tag { display: inline-block; font-size: 11px; padding: 1px 6px; border-radius: 4px; background: rgba(250,178,25,0.12); color: var(--warning); margin-left: 4px; }
+
+/* 정리 내역 */
+.clean-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 6px 0 16px; }
+.cstat { background: var(--page); border: 1px solid var(--grid); border-radius: 10px; padding: 12px; }
+.cstat b { display: block; font-size: 22px; font-weight: 650; }
+.cstat span { font-size: 12px; color: var(--text-muted); }
+.callouts { display: grid; gap: 8px; margin-bottom: 16px; }
+.callout { display: flex; gap: 10px; padding: 12px 14px; border-radius: 10px; background: rgba(250,178,25,0.07); border: 1px solid rgba(250,178,25,0.22); }
+.callout .ic { color: var(--warning); font-weight: 700; flex: none; }
+.callout b { color: var(--text-primary); }
+.callout p { margin: 0; color: var(--text-secondary); font-size: 13px; }
+.steps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.step { background: var(--page); border: 1px solid var(--grid); border-radius: 10px; padding: 12px 14px; }
+.step h3 { margin: 0 0 6px; font-size: 13px; font-weight: 650; display: flex; justify-content: space-between; }
+.step h3 span { color: var(--series-1); font-variant-numeric: tabular-nums; }
+.step { min-width: 0; overflow-wrap: anywhere; }
+.step ul { margin: 0; padding-left: 16px; color: var(--text-secondary); font-size: 12.5px; }
+.step li { margin: 2px 0; }
+.step code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11.5px; background: var(--surface-2); padding: 0 4px; border-radius: 4px; color: var(--text-primary); }
+h3.sec { font-size: 13px; color: var(--text-secondary); font-weight: 600; margin: 18px 0 8px; }
+
+/* 툴팁 */
+.tip { position: fixed; z-index: 50; pointer-events: none; background: #2a2a28; border: 1px solid rgba(255,255,255,0.14); color: var(--text-primary);
+  padding: 8px 10px; border-radius: 8px; font-size: 12px; box-shadow: 0 8px 24px rgba(0,0,0,.5); opacity: 0; transition: opacity .12s; max-width: 240px; }
+.tip.on { opacity: 1; }
+.tip .t { color: var(--text-secondary); margin-bottom: 2px; }
+.tip .v { font-weight: 650; font-size: 14px; font-variant-numeric: tabular-nums; }
+.tip .s { color: var(--text-muted); margin-top: 2px; }
+
+.empty { color: var(--text-muted); text-align: center; padding: 32px 0; }
+footer { color: var(--text-muted); font-size: 12px; margin-top: 24px; text-align: center; }
+
+@media (max-width: 900px) {
+  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .kpi.hero { grid-column: span 2; }
+  .kpi:last-child { grid-column: span 2; }
+  .span-7, .span-5, .span-6 { grid-column: span 12; }
+  .clean-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .steps { grid-template-columns: 1fr; }
+}
+@media (max-width: 420px) {
+  .wrap { padding: 16px 12px 40px; }
+  .filters { margin: 12px -12px 0; padding: 8px 12px; }
+  header h1 { font-size: 19px; }
+  .kpi .value { font-size: 22px; }
+  .kpi.hero .value { font-size: 36px; }
+  .card { padding: 14px; }
+  .hbar { grid-template-columns: 78px 1fr 72px; gap: 8px; }
+  .hbar .val { font-size: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>한빛상사 2026년 3분기 매출</h1>
+    <p id="period"></p>
+    <a class="badge" href="#cleaning">⚠ 정리된 데이터 기준 · 확인 필요 항목 있음</a>
+  </header>
+
+  <nav class="filters" aria-label="필터">
+    <div class="frow" id="f-month"><span class="flabel">월</span></div>
+    <div class="frow" id="f-region"><span class="flabel">지역</span></div>
+    <div class="frow" id="f-product"><span class="flabel">제품</span></div>
+    <div class="fmeta">
+      <span id="fsummary"></span>
+      <span style="display:flex;gap:14px;align-items:center">
+        <label class="toggle" title="꺼두면 9월도 7·8월처럼 수량×단가로 계산합니다"><input type="checkbox" id="basis" checked> 9월 기록 매출(×1.15) 사용</label>
+        <button id="reset" type="button">필터 초기화</button>
+      </span>
+    </div>
+  </nav>
+
+  <section class="kpis" aria-label="핵심 지표">
+    <div class="card kpi hero"><div class="label">총매출</div><div class="value" id="k-sales"></div><div class="sub" id="k-sales-sub"></div></div>
+    <div class="card kpi"><div class="label">판매수량</div><div class="value" id="k-qty"></div><div class="sub" id="k-qty-sub"></div></div>
+    <div class="card kpi"><div class="label">거래 건수</div><div class="value" id="k-cnt"></div><div class="sub" id="k-cnt-sub"></div></div>
+    <div class="card kpi"><div class="label">건당 평균 매출</div><div class="value" id="k-avg"></div><div class="sub" id="k-avg-sub"></div></div>
+  </section>
+
+  <section class="grid">
+    <div class="card span-7">
+      <div class="card-head">
+        <div><h2>매출 추이</h2><p class="desc" id="trend-desc"></p></div>
+        <div class="seg" role="group" aria-label="추이 단위">
+          <button type="button" data-trend="month" aria-pressed="true">월별</button>
+          <button type="button" data-trend="week" aria-pressed="false">주별</button>
+        </div>
+      </div>
+      <div id="trend"></div>
+      <div class="chart-note" id="trend-note"></div>
+    </div>
+    <div class="card span-5">
+      <h2>영업사원 순위</h2><p class="desc">선택한 조건의 매출 기준</p>
+      <div class="rank" id="rank"></div>
+    </div>
+    <div class="card span-6">
+      <h2>지역별 매출</h2><p class="desc">막대를 누르면 해당 지역으로 필터됩니다</p>
+      <div class="hbars" id="regions"></div>
+    </div>
+    <div class="card span-6">
+      <h2>제품별 매출</h2><p class="desc">막대를 누르면 해당 제품으로 필터됩니다</p>
+      <div class="hbars" id="products"></div>
+    </div>
+
+    <details class="card span-12" id="table-card">
+      <summary><div><h2>거래 상세</h2><p class="desc" style="margin:2px 0 0" id="table-desc"></p></div></summary>
+      <div class="tablewrap"><table>
+        <thead><tr><th>일자</th><th>지역</th><th>제품</th><th>담당자</th><th class="num">수량</th><th class="num">단가</th><th class="num">매출</th><th>비고</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table></div>
+    </details>
+
+    <section class="card span-12" id="cleaning">
+      <h2>데이터 정리 내역</h2>
+      <p class="desc" id="clean-desc"></p>
+      <div class="clean-stats" id="clean-stats"></div>
+      <div class="callouts" id="callouts"></div>
+      <div class="steps" id="steps"></div>
+      <h3 class="sec">삭제한 원본 행</h3>
+      <div class="tablewrap" style="max-height:300px"><table>
+        <thead><tr><th class="num">원본 행</th><th>사유</th><th>내용</th></tr></thead>
+        <tbody id="removed"></tbody>
+      </table></div>
+    </section>
+  </section>
+  <footer>원본: <span id="src"></span> · 정리본: 2026_3분기_매출_정리본.xlsx · 금액 단위: 원</footer>
+</div>
+<div class="tip" id="tip" role="tooltip"></div>
+
+<script>
+const DATA = {"rows":[{"date":"2026-07-01","region":"대전","product":"노이즈캔슬링 헤드셋","rep":"오세린","qty":39,"price":129000,"sales":5031000,"memo":"","imputed":true},{"date":"2026-07-01","region":"서울","product":"스마트 텀블러","rep":"박지민","qty":3,"price":18000,"sales":54000,"memo":"","imputed":false},{"date":"2026-07-02","region":"부산","product":"노이즈캔슬링 헤드셋","rep":"최유나","qty":20,"price":129000,"sales":2580000,"memo":"","imputed":false},{"date":"2026-07-02","region":"서울","product":"무선 충전 패드","rep":"이서준","qty":34,"price":32000,"sales":1088000,"memo":"반품 확인 필요","imputed":false},{"date":"2026-07-02","region":"서울","product":"사무용 의자","rep":"이서준","qty":3,"price":189000,"sales":567000,"memo":"단가 확인","imputed":false},{"date":"2026-07-03","region":"대구","product":"스마트 텀블러","rep":"정하늘","qty":16,"price":18000,"sales":288000,"memo":"","imputed":true},{"date":"2026-07-03","region":"부산","product":"노이즈캔슬링 헤드셋","rep":"최유나","qty":30,"price":129000,"sales":3870000,"memo":"재고 부족","imputed":true},{"date":"2026-07-03","region":"부산","product":"무선 충전 패드","rep":"최유나","qty":18,"price":32000,"sales":576000,"memo":"","imputed":false},{"date":"2026-07-03","region":"서울","product":"사무용 의자","rep":"이서준","qty":10,"price":189000,"sales":1890000,"memo":"","imputed":false},{"date":"2026-07-04","region":"대구","product":"스마트 텀블러","rep":"정하늘","qty":19,"price":18000,"sales":342000,"memo":"","imputed":false},{"date":"2026-07-04","region":"대전","product":"모니터암","rep":"오세린","qty":23,"price":54000,"sales":1242000,"memo":"반품 확인 필요","imputed":false},{"date":"2026-07-04","region":"서울","product":"사무용 의자","rep":"이서준","qty":1,"price":189000,"sales":189000,"memo":"단가 확인","imputed":false},{"date":"2026-07-05","region":"대전","product":"사무용 의자","rep":"오세린","qty":12,"price":189000,"sales":2268000,"memo":"반품 확인 필요","imputed":false},{"date":"2026-07-06","region":"대구","product":"노이즈캔슬링 헤드셋","rep":"정하늘","qty":25,"price":129000,"sales":3225000,"memo":"","imputed":false},{"date":"2026-07-06","region":"대전","product":"모니터암","rep":"오세린","qty":14,"price":54000,"sales":756000,"memo":"","imputed":false},{"date":"2026-07-06","region":"서울","product":"무선 충전 패드","rep":"이서준","qty":13,"price":32000,"sales":416000,"memo":"","imputed":false},{"date":"2026-07-07","region":"서울","product":"모니터암","rep":"이서준","qty":29,"price":54000,"sales":1566000,"memo":"단가 확인","imputed":false},{"date":"2026-07-08","region":"대구","product":"모니터암","rep":"정하늘","qty":21,"price":54000,"sales":1134000,"memo":"","imputed":false},{"date":"2026-07-08","region":"대전","product":"스마트 텀블러","rep":"오세린","qty":25,"price":18000,"sales":450000,"memo":"단가 확인","imputed":false},{"date":"2026-07-08","region":"부산","product":"노이즈캔슬링 헤드셋","rep":"최유나","qty":23,"price":129000,"sales":2967000,"memo":"","imputed":false},{"date":"2026-07-08","region":"부산","product":"사무용 의자","rep":"최유나","qty":7,"price":189000,"sales":1323000,"memo":"","imputed":false},{"date":"2026-07-08","region":"서울","product":"사무용 의자","rep":"이서준","qty":8,"price":189000,"sales":1512000,"memo":"VIP","imputed":false},{"date":"2026-07-08","region":"서울","product":"모니터암","rep":"이서준","qty":4,"price":54000,"sales":216000,"memo":"","imputed":false},{"date":"2026-07-09","region":"대구","product":"노이즈캔슬링 헤드셋","rep":"정하늘","qty":4,"price":129000,"sales":516000,"memo":"재고 부족","imputed":false},{"date":"2026-07-09","region":"대전","product":"노이즈캔슬링 헤드셋","rep":"오세린","qty":26,"price":129000,"sales":3354000,"memo":"","imputed":false},{"date":"2026-07-10","region":"대구","product":"스마트 텀블러","rep":"정하늘","qty":22,"price":18000,"sales":396000,"memo":"","imputed":false},{"date":"2026-07-10","region":"대구","product":"사무용 의자","rep":"정하늘","qty":7,"price":189000,"sales":1323000,"memo":"재고 부족","imputed":false},{"date":"2026-07-11","region":"서울","product":"무선 충전 패드","rep":"박지민","qty":31,"price":32000,"sales":992000,"memo":"반품 확인 필요","imputed":true},{"date":"2026-07-11","region":"서울","product":"무선 충전 패드","rep":"박지민","qty":23,"price":32000,"sales":736000,"memo":"","imputed":false},{"date":"2026-07-11","region":"서울","product":"스마트 텀블러","rep":"이서준","qty":7,"price":18000,"sales":126000,"memo":"VIP","imputed":false},{"date":"2026-07-12","region":"부산","product":"사무용 의자","rep":"최유나","qty":4,"price":189000,"sales":756000,"memo":"단가 확인","imputed":false},{"date":"2026-07-12","region":"부산","product":"무선 충전 패드","rep":"최유나","qty":4,"price":32000,"sales":128000,"memo":"반품 확인 필요","imputed":false},{"date":"2026-07-12","region":"서울","product":"노이즈캔슬링 헤드셋","rep":"이서준","qty":39,"price":129000,"sales":5031000,"memo":"","imputed":false},{"date":"2026-07-13","region":"광주","product":"노이즈캔슬링 헤드셋","rep":"한도윤","qty":34,"price":129000,"sales":4386000,"memo":"","imputed":false},{"date":"2026-07-13","region":"광주","product":"모니터암","rep":"한도윤","qty":19,"price":54000,"sales":1026000,"memo":"","imputed":false},{"date":"2026-07-13","region":"부산","product":"모니터암","rep":"최유나","qty":35,"price":54000,"sales":1890000,"memo":"재고 부족","imputed":false},{"date":"2026-07-14","region":"광주","product":"모니터암","rep":"한도윤","qty":18,"price":54000,"sales":972000,"memo":"","imputed":false},{"date":"2026-07-14","region":"부산","product":"무선 충전 패드","rep":"최유나","qty":20,"price":32000,"sales":640000,"memo":"","imputed":false},{"date":"2026-07-14","region":"서울","product":"무선 충전 패드","rep":"이서준","qty":34,"price":32000,"sales":1088000,"memo":"재고 부족","imputed":false},{"date":"2026-07-15","region":"광주","product":"무선 충전 패드","rep":"한도윤","qty":40,"price":32000,"sales":1280000,"memo":"","imputed":true},{"date":"2026-07-15","region":"서울","product":"무선 충전 패드","rep":"박지민","qty":13,"price":32000,"sales":416000,"memo":"","imputed":false},{"date":"2026-07-16","region":"부산","product":"무선 충전 패드","rep":"최유나","qty":13,"price":32000,"sales":416000,"memo":"","imputed":false},{"date":"2026-07-16","region":"서울","product":"사무용 의자","rep":"박지민","qty":6,"price":189000,"sales":1134000,"memo":"","imputed":false},{"date":"2026-07-17","region":"대구","product":"모니터암","rep":"정하늘","qty":24,"price":54000,"sales":1296000,"memo":"","imputed":false},{"date":"2026-07-17","region":"부산","product":"무선 충전 패드","rep":"최유나","qty":21,"price":32000,"sales":672000,"memo":"VIP","imputed":false},{"date":"2026-07-18","region":"부산","product":"모니터암","rep":"최유나","qty":25,"price":54000,"sales":1350000,"memo":"","imputed":false},{"date":"2026-07-18","region":"부산","product":"스마트 텀블러","rep":"최유나","qty":32,"price":18000,"sales":576000,"memo":"","imputed":true},{"date":"2026-07-18","region":"서울","product":"모니터암","rep":"이서준","qty":12,"price":54000,"sales":648000,"memo":"재고 부족","imputed":false},{"date":"2026-07-19","region":"서울","product":"무선 충전 패드","rep":"박지민","qty":38,"price":32000,"sales":1216000,"memo":"","imputed":false},{"date":"2026-07-20","region":"광주","product":"모니터암","rep":"한도윤","qty":18,"price":54000,"sales":972000,"memo":"단가 확인","imputed":false},{"date":"2026-07-20","region":"대구","product":"모니터암","rep":"정하늘","qty":39,"price":54000,"sales":2106000,"memo":"","imputed":false},{"date":"2026-07-20","region":"대구","product":"스마트 텀블러","rep":"정하늘","qty":39,"price":18000,"sales":702000,"memo":"VIP","imputed":false},{"date":"2026-07-20","region":"부산","product":"사무용 의자","rep":"최유나","qty":7,"price":189000,"sales":1323000,"memo":"VIP","imputed":false},{"date":"2026-07-20","region":"서울","product":"사무용 의자","rep":"박지민","qty":12,"price":189000,"sales":2268000,"memo":"","imputed":false},{"date":"2026-07-21","region":"광주","product":"모니터암","rep":"한도윤","qty":1,"price":54000,"sales":54000,"memo":"","imputed":false},{"date":"2026-07-21","region":"대구","product":"무선 충전 패드","rep":"정하늘","qty":39,"price":32000,"sales":1248000,"memo":"","imputed":false},{"date":"2026-07-21","region":"대구","product":"노이즈캔슬링 헤드셋","rep":"정하늘","qty":40,"price":129000,"sales":5160000,"memo":"반품 확인 필요","imputed":false},{"date":"2026-07-21","region":"대전","product":"사무용 의자","rep":"오세린","qty":10,"price":189000,"sales":1890000,"memo":"반품 확인 필요","imputed":false},{"date":"2026-07-21","region":"부산","product":"노이즈캔슬링 헤드셋","rep":"최유나","qty":30,"price":129000,"sales":3870000,"memo":"","imputed":false},{"date":"2026-07-21","region":"서울","product":"사무용 의자","rep":"박지민","qty":12,"price":189000,"sales":2268000,"memo":"","imputed":false},{"date":"2026-07-21","region":"서울","product":"무선 충전 패드","rep":"박지민","qty":30,"price":32000,"sales":960000,"memo":"","imputed":false},{"date":"2026-07-21","region":"서울","product":"무선 충전 패드","rep":"박지민","qty":27,"price":32000,"sales":864000,"memo":"","imputed":false},{"date":"2026-07-21","region":"서울","product":"사무용 의자","rep":"이서준","qty":6,"price":189000,"sales":1134000,"memo":"반품 확인 필요","imputed":false},{"date":"2026-07-22","region":"광주","product":"스마트 텀블러","rep":"한도윤","qty":24,"price":18000,"sales":432000,"memo":"반품 확인 필요","imputed":false},{"date":"2026-07-22","region":"서울","product":"노이즈캔슬링 헤드셋","rep":"이서준","qty":39,"price":129000,"sales":5031000,"memo":"반품 확인 필요","imputed":false},{"date":"2026-07-22","region":"서울","product":"노이즈캔슬링 헤드셋","rep":"이서준","qty":28,"price":129000,"sales":3612000,"memo":"","imputed":false},{"date":"2026-07-23","region":"광주","product":"모니터암","rep":"한도윤","qty":31,"price":54000,"sales":1674000,"memo":"단가 확인","imputed":false},{"date":"2026-07-23","region":"대구","product":"무선 충전 패드","rep":"정하늘","qty":4,"price":32000,"sales":128000,"memo":"","imputed":false},{"date":"2026-07-23","region":"대전","product":"모니터암","rep":"오세린","qty":23,"price":54000,"sales":1242000,"memo":"반품 확인 필요","imputed":false},{"date":"2026-07-23","region":"서울","product":"모니터암","rep":"박지민","qty":35,"price":54000,"sales":1890000,"memo":"반품 확인 필요","imputed":false},{"date":"2026-07-23","region":"서울","product":"무선 충전 패드","rep":"박지민","qty":38,"price":32000,"sales":1216000,"memo":"","imputed":false},{"date":"2026-07-23","region":"서울","product":"사무용 의자","rep":"이서준","qty":2,"price":189000,"sales":378000,"memo":"","imputed":false},{"date":"2026-07-24","region":"대전","product":"노이즈캔슬링 헤드셋","rep":"오세린","qty":11,"price":129000,"sales":1419000,"memo":"VIP","imputed":false},{"date":"2026-07-24","region":"대전","product":"사무용 의자","rep":"오세린","qty":2,"price":189000,"sales":378000,"memo":"","imputed":false},{"date":"2026-07-24","region":"서울","product":"모니터암","rep":"이서준","qty":2,"price":54000,"sales":108000,"memo":"","imputed":false},{"date":"2026-07-25","region":"대구","product":"스마트 텀블러","rep":"정하늘","qty":9,"price":18000,"sales":162000,"memo":"반품 확인 필요","imputed":false},{"date":"2026-07-25","region":"대전","product":"사무용 의자","rep":"오세린","qty":12,"price":189000,"sales":2268000,"memo":"","imputed":false},{"date":"2026-07-25","region":"부산","product":"노이즈캔슬링 헤드셋","rep":"최유나","qty":20,"price":129000,"sales":2580000,"memo":"","imputed":false},{"date":"2026-07-25","region":"서울","product":"스마트 텀블러","rep":"이서준","qty":6,"price":18000,"sales":108000,"memo":"반품 확인 필요","imputed":false},{"date":"2026-07-26","region":"대전","product":"사무용 의자","rep":"오세린","qty":1,"price":189000,"sales":189000,"memo":"재고 부족","imputed":false},{"date":"2026-07-26","region":"대전","product":"스마트 텀블러","rep":"오세린","qty":36,"price":18000,"sales":648000,"memo":"VIP","imputed":true},{"date":"2026-07-26","region":"서울","product":"스마트 텀블러","rep":"박지민","qty":2,"price":18000,"sales":36000,"memo":"","imputed":false},{"date":"2026-07-26","region":"서울","product":"모니터암","rep":"이서준","qty":17,"price":54000,"sales":918000,"memo":"재고 부족","imputed":false},{"date":"2026-07-26","region":"서울","product":"모니터암","rep":"이서준","qty":8,"price":54000,"sales":432000,"memo":"","imputed":false},{"date":"2026-07-27","region":"대구","product":"모니터암","rep":"정하늘","qty":17,"price":54000,"sales":918000,"memo":"VIP","imputed":false},{"date":"2026-07-27","region":"대전","product":"무선 충전 패드","rep":"오세린","qty":28,"price":32000,"sales":896000,"memo":"VIP","imputed":true},{"date":"2026-07-27","region":"부산","product":"무선 충전 패드","rep":"최유나","qty":40,"price":32000,"sales":1280000,"memo":"","imputed":false},{"date":"2026-07-27","region":"서울","product":"무선 충전 패드","rep":"이서준","qty":35,"price":32000,"sales":1120000,"memo":"반품 확인 필요","imputed":false},{"date":"2026-07-27","region":"서울","product":"모니터암","rep":"이서준","qty":28,"price":54000,"sales":1512000,"memo":"","imputed":false},{"date":"2026-07-27","region":"서울","product":"사무용 의자","rep":"이서준","qty":11,"price":189000,"sales":2079000,"memo":"","imputed":false},{"date":"2026-07-28","region":"서울","product":"스마트 텀블러","rep":"박지민","qty":37,"price":18000,"sales":666000,"memo":"","imputed":false},{"date":"2026-07-28","region":"서울","product":"모니터암","rep":"이서준","qty":2,"price":54000,"sales":108000,"memo":"","imputed":true},{"date":"2026-08-01","region":"광주","product":"스마트 텀블러","rep":"한도윤","qty":3,"price":18000,"sales":54000,"memo":"","imputed":false},{"date":"2026-08-01","region":"서울","product":"모니터암","rep":"박지민","qty":21,"price":54000,"sales":1134000,"memo":"","imputed":false},{"date":"2026-08-01","region":"서울","product":"모니터암","rep":"이서준","qty":35,"price":54000,"sales":1890000,"memo":"","imputed":false},{"date":"2026-08-02","region":"부산","product":"노이즈캔슬링 헤드셋","rep":"최유나","qty":12,"price":129000,"sales":1548000,"memo":"VIP","imputed":false},{"date":"2026-08-02","region":"서울","product":"노이즈캔슬링 헤드셋","rep":"박지민","qty":8,"price":129000,"sales":1032000,"memo":"단가 확인","imputed":false},{"date":"2026-08-02","region":"서울","product":"스마트 텀블러","rep":"이서준","qty":4,"price":18000,"sales":72000,"memo":"반품 확인 필요","imputed":false},{"date":"2026-08-03","region":"대구","product":"스마트 텀블러","rep":"정하늘","qty":14,"price":18000,"sales":252000,"memo":"","imputed":false},{"date":"2026-08-03","region":"서울","product":"노이즈캔슬링 헤드셋","rep":"박지민","qty":19,"price":129000,"sales":2451000,"memo":"","imputed":false},{"date":"2026-08-03","region":"서울","product":"무선 충전 패드","rep":"박지민","qty":15,"price":32000,"sales":480000,"memo":"단가 확인","imputed":false},{"date":"2026-08-03","region":"서울","product":"노이즈캔슬링 헤드셋","rep":"박지민","qty":2,"price":129000,"sales":258000,"memo":"반품 확인 필요","imputed":false},{"date":"2026-08-03","region":"서울","product":"무선 충전 패드","rep":"박지민","qty":34,"price":32000,"sales":1088000,"memo":"","imputed":false},{"date":"2026-08-03","region":"서울","product":"노이즈캔슬링 헤드셋","rep":"박지민","qty":4,"price":129000,"sales":516000,"memo":"","imputed":true},{"date":"2026-08-04","region":"광주","product":"사무용 의자","rep":"한도윤","qty":8,"price":189000,"sales":1512000,"memo":"","imputed":true},{"date":"2026-08-04","region":"대구","product":"모니터암","rep":"정하늘","qty":4,"price":54000,"sales":216000,"memo":"","imputed":false},{"date":"2026-08-04","region":"대전","product":"노이즈캔슬링 헤드셋","rep":"오세린","qty":32,"price":129000,"sales":4128000,"memo":"반품 확인 필요","imputed":false},{"date":"2026-08-05","region":"광주","product":"모니터암","rep":"한도윤","qty":35,"price":54000,"sales":1890000,"memo":"반품 확인 필요","imputed":false},{"date":"2026-08-05","region":"부산","product":"스마트 텀블러","rep":"최유나","qty":30,"price":18000,"sales":540000,"memo":"단가 확인","imputed":false},{"date":"2026-08-05","region":"부산","product":"모니터암","rep":"최유나","qty":17,"price":54000,"sales":918000,"memo":"VIP","imputed":false},{"date":"2026-08-05","region":"서울","product":"스마트 텀블러","rep":"박지민","qty":39,"price":18000,"sales":702000,"memo":"","imputed":true},{"date":"2026-08-05","region":"서울","product":"노이즈캔슬링 헤드셋","rep":"박지민","qty":12,"price":129000,"sales":1548000,"memo":"","imputed":false},{"date":"2026-08-06","region":"대전","product":"사무용 의자","rep":"오세린","qty":10,"price":189000,"sales":1890000,"memo":"","imputed":false},{"date":"2026-08-06","region":"대전","product":"노이즈캔슬링 헤드셋","rep":"오세린","qty":21,"price":129000,"sales":2709000,"memo":"","imputed":false},{"date":"2026-08-06","region":"부산","product":"무선 충전 패드","rep":"최유나","qty":40,"price":32000,"sales":1280000,"memo":"반품 확인 필요","imputed":false},{"date":"2026-08-06","region":"부산","product":"스마트 텀블러","rep":"최유나","qty":8,"price":18000,"sales":144000,"memo":"","imputed":false},{"date":"2026-08-06","region":"부산","product":"무선 충전 패드","rep":"최유나","qty":2,"price":32000,"sales":64000,"memo":"재고 부족","imputed":false},{"date":"2026-08-06","region":"부산","product":"사무용 의자","rep":"최유나","qty":8,"price":189000,"sales":1512000,"memo":"단가 확인","imputed":false},{"date":"2026-08-06","region":"서울","product":"스마트 텀블러","rep":"박지민","qty":21,"price":18000,"sales":378000,"memo":"재고 부족","imputed":false},{"date":"2026-08-06","region":"서울","product":"모니터암","rep":"박지민","qty":36,"price":54000,"sales":1944000,"memo":"재고 부족","imputed":false},{"date":"2026-08-07","region":"대구","product":"무선 충전 패드","rep":"정하늘","qty":34,"price":32000,"sales":1088000,"memo":"VIP","imputed":false},{"date":"2026-08-07","region":"대전","product":"무선 충전 패드","rep":"오세린","qty":29,"price":32000,"sales":928000,"memo":"","imputed":false},{"date":"2026-08-09","region":"서울","product":"스마트 텀블러","rep":"박지민","qty":14,"price":18000,"sales":252000,"memo":"반품 확인 필요","imputed":true},{"date":"2026-08-10","region":"서울","product":"스마트 텀블러","rep":"박지민","qty":18,"price":18000,"sales":324000,"memo":"","imputed":true},{"date":"2026-08-10","region":"서울","product":"모니터암","rep":"이서준","qty":7,"price":54000,"sales":378000,"memo":"","imputed":false},{"date":"2026-08-10","region":"서울","product":"모니터암","rep":"이서준","qty":30,"price":54000,"sales":1620000,"memo":"VIP","imputed":false},{"date":"2026-08-11","region":"부산","product":"무선 충전 패드","rep":"최유나","qty":27,"price":32000,"sales":864000,"memo":"","imputed":false},{"date":"2026-08-11","region":"부산","product":"노이즈캔슬링 헤드셋","rep":"최유나","qty":31,"price":129000,"sales":3999000,"memo":"VIP","imputed":false},{"date":"2026-08-11","region":"서울","product":"모니터암","rep":"박지민","qty":16,"price":54000,"sales":864000,"memo":"재고 부족","imputed":false},{"date":"2026-08-12","region":"대구","product":"모니터암","rep":"정하늘","qty":32,"price":54000,"sales":1728000,"memo":"재고 부족","imputed":false},{"date":"2026-08-12","region":"서울","product":"무선 충전 패드","rep":"이서준","qty":23,"price":32000,"sales":736000,"memo":"단가 확인","imputed":false},{"date":"2026-08-13","region":"대전","product":"무선 충전 패드","rep":"오세린","qty":25,"price":32000,"sales":800000,"memo":"VIP","imputed":false},{"date":"2026-08-13","region":"부산","product":"사무용 의자","rep":"최유나","qty":10,"price":189000,"sales":1890000,"memo":"","imputed":false},{"date":"2026-08-13","region":"부산","product":"노이즈캔슬링 헤드셋","rep":"최유나","qty":23,"price":129000,"sales":2967000,"memo":"단가 확인","imputed":false},{"date":"2026-08-13","region":"부산","product":"스마트 텀블러","rep":"최유나","qty":14,"price":18000,"sales":252000,"memo":"반품 확인 필요","imputed":false},{"date":"2026-08-14","region":"대전","product":"모니터암","rep":"오세린","qty":16,"price":54000,"sales":864000,"memo":"재고 부족","imputed":false},{"date":"2026-08-15","region":"부산","product":"무선 충전 패드","rep":"최유나","qty":39,"price":32000,"sales":1248000,"memo":"재고 부족","imputed":false},{"date":"2026-08-15","region":"서울","product":"노이즈캔슬링 헤드셋","rep":"이서준","qty":22,"price":129000,"sales":2838000,"memo":"","imputed":false},{"date":"2026-08-16","region":"광주","product":"무선 충전 패드","rep":"한도윤","qty":20,"price":32000,"sales":640000,"memo":"VIP","imputed":false},{"date":"2026-08-16","region":"광주","product":"스마트 텀블러","rep":"한도윤","qty":39,"price":18000,"sales":702000,"memo":"","imputed":false},{"date":"2026-08-16","region":"부산","product":"스마트 텀블러","rep":"최유나","qty":8,"price":18000,"sales":144000,"memo":"","imputed":true},{"date":"2026-08-17","region":"대전","product":"무선 충전 패드","rep":"오세린","qty":13,"price":32000,"sales":416000,"memo":"","imputed":false},{"date":"2026-08-17","region":"대전","product":"모니터암","rep":"오세린","qty":22,"price":54000,"sales":1188000,"memo":"","imputed":false},{"date":"2026-08-17","region":"부산","product":"스마트 텀블러","rep":"최유나","qty":31,"price":18000,"sales":558000,"memo":"단가 확인","imputed":false},{"date":"2026-08-17","region":"서울","product":"무선 충전 패드","rep":"이서준","qty":30,"price":32000,"sales":960000,"memo":"","imputed":true},{"date":"2026-08-18","region":"대전","product":"무선 충전 패드","rep":"오세린","qty":31,"price":32000,"sales":992000,"memo":"","imputed":false},{"date":"2026-08-18","region":"부산","product":"무선 충전 패드","rep":"최유나","qty":18,"price":32000,"sales":576000,"memo":"재고 부족","imputed":false},{"date":"2026-08-18","region":"부산","product":"스마트 텀블러","rep":"최유나","qty":19,"price":18000,"sales":342000,"memo":"단가 확인","imputed":false},{"date":"2026-08-18","region":"부산","product":"무선 충전 패드","rep":"최유나","qty":13,"price":32000,"sales":416000,"memo":"단가 확인","imputed":true},{"date":"2026-08-18","region":"서울","product":"스마트 텀블러","rep":"이서준","qty":37,"price":18000,"sales":666000,"memo":"반품 확인 필요","imputed":false},{"date":"2026-08-19","region":"광주","product":"스마트 텀블러","rep":"한도윤","qty":11,"price":18000,"sales":198000,"memo":"","imputed":true},{"date":"2026-08-19","region":"광주","product":"모니터암","rep":"한도윤","qty":6,"price":54000,"sales":324000,"memo":"재고 부족","imputed":false},{"date":"2026-08-19","region":"대구","product":"모니터암","rep":"정하늘","qty":29,"price":54000,"sales":1566000,"memo":"재고 부족","imputed":true},{"date":"2026-08-19","region":"서울","product":"모니터암","rep":"이서준","qty":24,"price":54000,"sales":1296000,"memo":"","imputed":false},{"date":"2026-08-19","region":"서울","product":"사무용 의자","rep":"이서준","qty":12,"price":189000,"sales":2268000,"memo":"","imputed":false},{"date":"2026-08-21","region":"대전","product":"스마트 텀블러","rep":"오세린","qty":5,"price":18000,"sales":90000,"memo":"","imputed":false},{"date":"2026-08-21","region":"부산","product":"모니터암","rep":"최유나","qty":24,"price":54000,"sales":1296000,"memo":"","imputed":false},{"date":"2026-08-22","region":"광주","product":"모니터암","rep":"한도윤","qty":19,"price":54000,"sales":1026000,"memo":"VIP","imputed":false},{"date":"2026-08-22","region":"대전","product":"사무용 의자","rep":"오세린","qty":8,"price":189000,"sales":1512000,"memo":"VIP","imputed":true},{"date":"2026-08-22","region":"대전","product":"노이즈캔슬링 헤드셋","rep":"오세린","qty":8,"price":129000,"sales":1032000,"memo":"반품 확인 필요","imputed":false},{"date":"2026-08-23","region":"대구","product":"사무용 의자","rep":"정하늘","qty":6,"price":189000,"sales":1134000,"memo":"","imputed":false},{"date":"2026-08-23","region":"대전","product":"스마트 텀블러","rep":"오세린","qty":21,"price":18000,"sales":378000,"memo":"","imputed":false},{"date":"2026-08-24","region":"대구","product":"모니터암","rep":"정하늘","qty":17,"price":54000,"sales":918000,"memo":"단가 확인","imputed":false},{"date":"2026-08-24","region":"대구","product":"모니터암","rep":"정하늘","qty":31,"price":54000,"sales":1674000,"memo":"","imputed":false},{"date":"2026-08-24","region":"부산","product":"노이즈캔슬링 헤드셋","rep":"최유나","qty":7,"price":129000,"sales":903000,"memo":"","imputed":true},{"date":"2026-08-24","region":"서울","product":"스마트 텀블러","rep":"이서준","qty":40,"price":18000,"sales":720000,"memo":"","imputed":false},{"date":"2026-08-24","region":"서울","product":"무선 충전 패드","rep":"이서준","qty":3,"price":32000,"sales":96000,"memo":"반품 확인 필요","imputed":false},{"date":"2026-08-24","region":"서울","product":"노이즈캔슬링 헤드셋","rep":"이서준","qty":28,"price":129000,"sales":3612000,"memo":"","imputed":true},{"date":"2026-08-25","region":"대전","product":"스마트 텀블러","rep":"오세린","qty":13,"price":18000,"sales":234000,"memo":"VIP","imputed":true},{"date":"2026-08-25","region":"대전","product":"모니터암","rep":"오세린","qty":38,"price":54000,"sales":2052000,"memo":"","imputed":false},{"date":"2026-08-25","region":"부산","product":"노이즈캔슬링 헤드셋","rep":"최유나","qty":24,"price":129000,"sales":3096000,"memo":"VIP","imputed":false},{"date":"2026-08-25","region":"서울","product":"스마트 텀블러","rep":"박지민","qty":35,"price":18000,"sales":630000,"memo":"","imputed":true},{"date":"2026-08-25","region":"서울","product":"모니터암","rep":"박지민","qty":33,"price":54000,"sales":1782000,"memo":"","imputed":false},{"date":"2026-08-26","region":"광주","product":"모니터암","rep":"한도윤","qty":5,"price":54000,"sales":270000,"memo":"","imputed":false},{"date":"2026-08-26","region":"대구","product":"모니터암","rep":"정하늘","qty":32,"price":54000,"sales":1728000,"memo":"","imputed":false},{"date":"2026-08-26","region":"서울","product":"사무용 의자","rep":"이서준","qty":3,"price":189000,"sales":567000,"memo":"재고 부족","imputed":false},{"date":"2026-08-26","region":"서울","product":"노이즈캔슬링 헤드셋","rep":"이서준","qty":29,"price":129000,"sales":3741000,"memo":"","imputed":true},{"date":"2026-08-26","region":"서울","product":"사무용 의자","rep":"이서준","qty":10,"price":189000,"sales":1890000,"memo":"","imputed":true},{"date":"2026-08-27","region":"서울","product":"스마트 텀블러","rep":"이서준","qty":25,"price":18000,"sales":450000,"memo":"반품 확인 필요","imputed":false},{"date":"2026-08-28","region":"서울","product":"모니터암","rep":"이서준","qty":3,"price":54000,"sales":162000,"memo":"","imputed":false},{"date":"2026-09-01","region":"대구","product":"무선 충전 패드","rep":"정하늘","qty":5,"price":32000,"sales":184000,"memo":"VIP","imputed":false},{"date":"2026-09-01","region":"대전","product":"모니터암","rep":"오세린","qty":23,"price":54000,"sales":1428300,"memo":"단가 확인","imputed":false},{"date":"2026-09-01","region":"서울","product":"노이즈캔슬링 헤드셋","rep":"박지민","qty":29,"price":129000,"sales":4302150,"memo":"","imputed":false},{"date":"2026-09-01","region":"서울","product":"노이즈캔슬링 헤드셋","rep":"이서준","qty":9,"price":129000,"sales":1335150,"memo":"반품 확인 필요","imputed":false},{"date":"2026-09-02","region":"광주","product":"모니터암","rep":"한도윤","qty":34,"price":54000,"sales":2111400,"memo":"","imputed":false},{"date":"2026-09-02","region":"서울","product":"모니터암","rep":"박지민","qty":27,"price":54000,"sales":1676700,"memo":"단가 확인","imputed":false},{"date":"2026-09-03","region":"서울","product":"스마트 텀블러","rep":"박지민","qty":6,"price":18000,"sales":124200,"memo":"","imputed":true},{"date":"2026-09-04","region":"광주","product":"사무용 의자","rep":"한도윤","qty":5,"price":189000,"sales":1086750,"memo":"재고 부족","imputed":false},{"date":"2026-09-04","region":"대구","product":"노이즈캔슬링 헤드셋","rep":"정하늘","qty":22,"price":129000,"sales":3263700,"memo":"","imputed":false},{"date":"2026-09-04","region":"부산","product":"사무용 의자","rep":"최유나","qty":9,"price":189000,"sales":1956150,"memo":"","imputed":false},{"date":"2026-09-04","region":"부산","product":"스마트 텀블러","rep":"최유나","qty":10,"price":18000,"sales":207000,"memo":"","imputed":false},{"date":"2026-09-04","region":"서울","product":"모니터암","rep":"박지민","qty":39,"price":54000,"sales":2421900,"memo":"재고 부족","imputed":false},{"date":"2026-09-04","region":"서울","product":"모니터암","rep":"박지민","qty":32,"price":54000,"sales":1987200,"memo":"VIP","imputed":true},{"date":"2026-09-05","region":"서울","product":"스마트 텀블러","rep":"이서준","qty":4,"price":18000,"sales":82800,"memo":"","imputed":false},{"date":"2026-09-05","region":"서울","product":"사무용 의자","rep":"이서준","qty":3,"price":189000,"sales":652050,"memo":"","imputed":false},{"date":"2026-09-06","region":"부산","product":"무선 충전 패드","rep":"최유나","qty":30,"price":32000,"sales":1104000,"memo":"재고 부족","imputed":false},{"date":"2026-09-07","region":"광주","product":"사무용 의자","rep":"한도윤","qty":4,"price":189000,"sales":869400,"memo":"반품 확인 필요","imputed":false},{"date":"2026-09-07","region":"대전","product":"사무용 의자","rep":"오세린","qty":10,"price":189000,"sales":2173500,"memo":"","imputed":false},{"date":"2026-09-07","region":"부산","product":"무선 충전 패드","rep":"최유나","qty":13,"price":32000,"sales":478400,"memo":"","imputed":false},{"date":"2026-09-07","region":"부산","product":"노이즈캔슬링 헤드셋","rep":"최유나","qty":10,"price":129000,"sales":1483500,"memo":"","imputed":true},{"date":"2026-09-07","region":"부산","product":"모니터암","rep":"최유나","qty":5,"price":54000,"sales":310500,"memo":"","imputed":false},{"date":"2026-09-08","region":"대전","product":"노이즈캔슬링 헤드셋","rep":"오세린","qty":3,"price":129000,"sales":445050,"memo":"VIP","imputed":false},{"date":"2026-09-08","region":"부산","product":"노이즈캔슬링 헤드셋","rep":"최유나","qty":18,"price":129000,"sales":2670300,"memo":"VIP","imputed":false},{"date":"2026-09-09","region":"광주","product":"모니터암","rep":"한도윤","qty":34,"price":54000,"sales":2111400,"memo":"VIP","imputed":false},{"date":"2026-09-09","region":"부산","product":"무선 충전 패드","rep":"최유나","qty":39,"price":32000,"sales":1435200,"memo":"","imputed":false},{"date":"2026-09-09","region":"부산","product":"노이즈캔슬링 헤드셋","rep":"최유나","qty":26,"price":129000,"sales":3857100,"memo":"","imputed":false},{"date":"2026-09-09","region":"부산","product":"모니터암","rep":"최유나","qty":35,"price":54000,"sales":2173500,"memo":"VIP","imputed":false},{"date":"2026-09-09","region":"서울","product":"무선 충전 패드","rep":"박지민","qty":5,"price":32000,"sales":184000,"memo":"단가 확인","imputed":false},{"date":"2026-09-09","region":"서울","product":"노이즈캔슬링 헤드셋","rep":"이서준","qty":11,"price":129000,"sales":1631850,"memo":"","imputed":true},{"date":"2026-09-10","region":"대구","product":"무선 충전 패드","rep":"정하늘","qty":14,"price":32000,"sales":515200,"memo":"반품 확인 필요","imputed":true},{"date":"2026-09-10","region":"대전","product":"무선 충전 패드","rep":"오세린","qty":16,"price":32000,"sales":588800,"memo":"","imputed":false},{"date":"2026-09-10","region":"부산","product":"스마트 텀블러","rep":"최유나","qty":39,"price":18000,"sales":807300,"memo":"VIP","imputed":false},{"date":"2026-09-10","region":"서울","product":"무선 충전 패드","rep":"박지민","qty":10,"price":32000,"sales":368000,"memo":"단가 확인","imputed":false},{"date":"2026-09-10","region":"서울","product":"모니터암","rep":"박지민","qty":22,"price":54000,"sales":1366200,"memo":"단가 확인","imputed":true},{"date":"2026-09-11","region":"부산","product":"노이즈캔슬링 헤드셋","rep":"최유나","qty":22,"price":129000,"sales":3263700,"memo":"","imputed":false},{"date":"2026-09-11","region":"서울","product":"노이즈캔슬링 헤드셋","rep":"박지민","qty":17,"price":129000,"sales":2521950,"memo":"","imputed":false},{"date":"2026-09-11","region":"서울","product":"사무용 의자","rep":"이서준","qty":5,"price":189000,"sales":1086750,"memo":"단가 확인","imputed":false},{"date":"2026-09-12","region":"대전","product":"무선 충전 패드","rep":"오세린","qty":23,"price":32000,"sales":846400,"memo":"VIP","imputed":false},{"date":"2026-09-13","region":"광주","product":"스마트 텀블러","rep":"한도윤","qty":30,"price":18000,"sales":621000,"memo":"단가 확인","imputed":false},{"date":"2026-09-13","region":"서울","product":"무선 충전 패드","rep":"박지민","qty":8,"price":32000,"sales":294400,"memo":"VIP","imputed":false},{"date":"2026-09-14","region":"서울","product":"노이즈캔슬링 헤드셋","rep":"박지민","qty":31,"price":129000,"sales":4598850,"memo":"재고 부족","imputed":true},{"date":"2026-09-15","region":"대구","product":"노이즈캔슬링 헤드셋","rep":"정하늘","qty":37,"price":129000,"sales":5488950,"memo":"단가 확인","imputed":false},{"date":"2026-09-15","region":"서울","product":"무선 충전 패드","rep":"이서준","qty":14,"price":32000,"sales":515200,"memo":"VIP","imputed":false},{"date":"2026-09-16","region":"대구","product":"노이즈캔슬링 헤드셋","rep":"정하늘","qty":4,"price":129000,"sales":593400,"memo":"반품 확인 필요","imputed":false},{"date":"2026-09-16","region":"대전","product":"사무용 의자","rep":"오세린","qty":2,"price":189000,"sales":434700,"memo":"반품 확인 필요","imputed":false},{"date":"2026-09-16","region":"대전","product":"스마트 텀블러","rep":"오세린","qty":9,"price":18000,"sales":186300,"memo":"단가 확인","imputed":false},{"date":"2026-09-16","region":"부산","product":"스마트 텀블러","rep":"최유나","qty":21,"price":18000,"sales":434700,"memo":"VIP","imputed":false},{"date":"2026-09-16","region":"서울","product":"스마트 텀블러","rep":"박지민","qty":32,"price":18000,"sales":662400,"memo":"","imputed":false},{"date":"2026-09-16","region":"서울","product":"사무용 의자","rep":"이서준","qty":9,"price":189000,"sales":1956150,"memo":"","imputed":false},{"date":"2026-09-17","region":"서울","product":"무선 충전 패드","rep":"박지민","qty":15,"price":32000,"sales":552000,"memo":"단가 확인","imputed":true},{"date":"2026-09-17","region":"서울","product":"스마트 텀블러","rep":"박지민","qty":35,"price":18000,"sales":724500,"memo":"재고 부족","imputed":false},{"date":"2026-09-17","region":"서울","product":"사무용 의자","rep":"이서준","qty":5,"price":189000,"sales":1086750,"memo":"","imputed":true},{"date":"2026-09-18","region":"광주","product":"스마트 텀블러","rep":"한도윤","qty":12,"price":18000,"sales":248400,"memo":"단가 확인","imputed":false},{"date":"2026-09-18","region":"서울","product":"모니터암","rep":"박지민","qty":22,"price":54000,"sales":1366200,"memo":"","imputed":false},{"date":"2026-09-18","region":"서울","product":"무선 충전 패드","rep":"박지민","qty":7,"price":32000,"sales":257600,"memo":"VIP","imputed":false},{"date":"2026-09-18","region":"서울","product":"무선 충전 패드","rep":"이서준","qty":22,"price":32000,"sales":809600,"memo":"재고 부족","imputed":false},{"date":"2026-09-19","region":"대전","product":"스마트 텀블러","rep":"오세린","qty":16,"price":18000,"sales":331200,"memo":"반품 확인 필요","imputed":false},{"date":"2026-09-19","region":"서울","product":"사무용 의자","rep":"박지민","qty":2,"price":189000,"sales":434700,"memo":"VIP","imputed":false},{"date":"2026-09-20","region":"대전","product":"모니터암","rep":"오세린","qty":1,"price":54000,"sales":62100,"memo":"","imputed":true},{"date":"2026-09-21","region":"광주","product":"스마트 텀블러","rep":"한도윤","qty":20,"price":18000,"sales":414000,"memo":"","imputed":false},{"date":"2026-09-21","region":"대전","product":"무선 충전 패드","rep":"오세린","qty":30,"price":32000,"sales":1104000,"memo":"","imputed":false},{"date":"2026-09-21","region":"부산","product":"사무용 의자","rep":"최유나","qty":10,"price":189000,"sales":2173500,"memo":"","imputed":false},{"date":"2026-09-21","region":"부산","product":"노이즈캔슬링 헤드셋","rep":"최유나","qty":4,"price":129000,"sales":593400,"memo":"","imputed":false},{"date":"2026-09-21","region":"서울","product":"사무용 의자","rep":"박지민","qty":12,"price":189000,"sales":2608200,"memo":"","imputed":false},{"date":"2026-09-21","region":"서울","product":"스마트 텀블러","rep":"이서준","qty":25,"price":18000,"sales":517500,"memo":"반품 확인 필요","imputed":true},{"date":"2026-09-22","region":"광주","product":"무선 충전 패드","rep":"한도윤","qty":2,"price":32000,"sales":73600,"memo":"","imputed":false},{"date":"2026-09-22","region":"광주","product":"무선 충전 패드","rep":"한도윤","qty":20,"price":32000,"sales":736000,"memo":"","imputed":true},{"date":"2026-09-22","region":"대구","product":"스마트 텀블러","rep":"정하늘","qty":38,"price":18000,"sales":786600,"memo":"VIP","imputed":false},{"date":"2026-09-22","region":"부산","product":"노이즈캔슬링 헤드셋","rep":"최유나","qty":33,"price":129000,"sales":4895550,"memo":"VIP","imputed":false},{"date":"2026-09-22","region":"부산","product":"모니터암","rep":"최유나","qty":4,"price":54000,"sales":248400,"memo":"","imputed":false},{"date":"2026-09-23","region":"대구","product":"사무용 의자","rep":"정하늘","qty":1,"price":189000,"sales":217350,"memo":"","imputed":false},{"date":"2026-09-23","region":"부산","product":"노이즈캔슬링 헤드셋","rep":"최유나","qty":22,"price":129000,"sales":3263700,"memo":"재고 부족","imputed":false},{"date":"2026-09-25","region":"광주","product":"사무용 의자","rep":"한도윤","qty":10,"price":189000,"sales":2173500,"memo":"재고 부족","imputed":false},{"date":"2026-09-25","region":"광주","product":"모니터암","rep":"한도윤","qty":35,"price":54000,"sales":2173500,"memo":"단가 확인","imputed":false},{"date":"2026-09-25","region":"부산","product":"사무용 의자","rep":"최유나","qty":4,"price":189000,"sales":869400,"memo":"","imputed":false},{"date":"2026-09-25","region":"서울","product":"사무용 의자","rep":"박지민","qty":8,"price":189000,"sales":1738800,"memo":"","imputed":false},{"date":"2026-09-25","region":"서울","product":"노이즈캔슬링 헤드셋","rep":"이서준","qty":35,"price":129000,"sales":5192250,"memo":"재고 부족","imputed":true},{"date":"2026-09-26","region":"대전","product":"무선 충전 패드","rep":"오세린","qty":26,"price":32000,"sales":956800,"memo":"","imputed":false},{"date":"2026-09-26","region":"부산","product":"모니터암","rep":"최유나","qty":23,"price":54000,"sales":1428300,"memo":"재고 부족","imputed":false},{"date":"2026-09-26","region":"서울","product":"무선 충전 패드","rep":"이서준","qty":31,"price":32000,"sales":1140800,"memo":"단가 확인","imputed":false}],"log":{"source":"2026_3분기_매출_최종_진짜최종.xlsx","raw_rows":275,"clean_rows":260,"month_ratio":{"7":1.0,"8":1.0,"9":1.15},"month_ratio_n":{"7":85,"8":79,"9":70},"steps":[{"what":"중간 합계(소계) 줄 삭제","count":1,"examples":[]},{"what":"날짜 형식 통일: YYYY.M.D → YYYY-MM-DD","count":47,"examples":["2026.8.1","2026.8.19","2026.7.28","2026.9.1"]},{"what":"수량 텍스트(\"N개\") → 숫자","count":14,"examples":["3개","6개","11개","16개"]},{"what":"단가 텍스트(\"₩N\") → 숫자","count":77,"examples":["₩18,000","₩54,000","₩129,000","₩32,000"]},{"what":"지역명 통일 → 부산","count":39,"examples":["busan","부산광역시"]},{"what":"지역명 통일 → 서울","count":45,"examples":["Seoul","서울시"]},{"what":"날짜 형식 통일: M/D (연도 없음) → YYYY-MM-DD","count":60,"examples":["9/3","8/11","7/11","7/24"]},{"what":"제품명 띄어쓰기 통일","count":17,"examples":["스마트텀블러 → 스마트 텀블러","사무용의자 → 사무용 의자","노이즈캔슬링헤드셋 → 노이즈캔슬링 헤드셋","무선충전패드 → 무선 충전 패드"]},{"what":"지역명 통일 → 대구","count":16,"examples":["대구시"]},{"what":"지역명 앞뒤 공백 제거","count":46,"examples":["' 서울'","'대전시 '"]},{"what":"지역명 통일 → 광주","count":16,"examples":["광주광역시"]},{"what":"날짜 형식 통일: YYYY/MM/DD → YYYY-MM-DD","count":20,"examples":["2026/09/04","2026/07/24","2026/09/21","2026/08/04"]},{"what":"지역명 통일 → 대전","count":19,"examples":["대전시"]},{"what":"날짜 형식 통일: M월D일 (연도 없음) → YYYY-MM-DD","count":46,"examples":["7월19일","9월11일","7월6일","7월21일"]},{"what":"중복 행 삭제","count":14,"examples":["56행 = 21행","97행 = 48행","98행 = 71행","121행 = 95행"]},{"what":"매출 빈칸 → 수량×단가(×해당 월 배율)로 채움","count":39,"examples":["7행 2026-09-03 스마트 텀블러 6개","14행 2026-08-19 모니터암 29개","15행 2026-07-28 모니터암 2개","16행 2026-07-03 노이즈캔슬링 헤드셋 30개"]},{"what":"매출 1원 절사 오차 보정","count":27,"examples":["23행 3,263,699 → 3,263,700","39행 956,799 → 956,800","51행 478,399 → 478,400","52행 248,399 → 248,400"]}],"removed":[{"row":56,"reason":"중복 (첫 등장 21행)","raw":["2026-08-16","광주","무선 충전 패드","한도윤",20,640000]},{"row":97,"reason":"중복 (첫 등장 48행)","raw":["2026-08-22","광주","모니터암","한도윤",19,1026000]},{"row":98,"reason":"중복 (첫 등장 71행)","raw":["2026-09-04","광주","사무용 의자","한도윤",5,1086750]},{"row":121,"reason":"중복 (첫 등장 95행)","raw":["2026-09-22","광주","무선 충전 패드","한도윤",2,73600]},{"row":125,"reason":"중간 합계(소계) 줄","raw":["소계","← 중간 합계 지우지 마세요"]},{"row":174,"reason":"중복 (첫 등장 106행)","raw":["2026-08-23","대전","스마트 텀블러","오세린",21,378000]},{"row":179,"reason":"중복 (첫 등장 162행)","raw":["2026-09-13","서울","무선 충전 패드","박지민",8,294400]},{"row":197,"reason":"중복 (첫 등장 32행)","raw":["2026-08-12","서울","무선 충전 패드","이서준",23,736000]},{"row":226,"reason":"중복 (첫 등장 213행)","raw":["2026-07-28","서울","스마트 텀블러","박지민",37,666000]},{"row":233,"reason":"중복 (첫 등장 218행)","raw":["2026-08-02","서울","노이즈캔슬링 헤드셋","박지민",8,1032000]},{"row":237,"reason":"중복 (첫 등장 117행)","raw":["2026-08-19","광주","모니터암","한도윤",6,324000]},{"row":251,"reason":"중복 (첫 등장 193행)","raw":["2026-07-18","부산","스마트 텀블러","최유나",32,null]},{"row":263,"reason":"중복 (첫 등장 130행)","raw":["2026-08-11","부산","노이즈캔슬링 헤드셋","최유나",31,3999000]},{"row":268,"reason":"중복 (첫 등장 28행)","raw":["2026-07-24","대전","노이즈캔슬링 헤드셋","오세린",11,1419000]},{"row":277,"reason":"중복 (첫 등장 13행)","raw":["2026-08-15","서울","노이즈캔슬링 헤드셋","이서준",22,2838000]}],"imputed_total":52654600,"imputed_rows":39}};
+
+const MONTHS = [7, 8, 9];
+const REGIONS = ['서울', '부산', '대구', '대전', '광주'];
+const PRODUCTS = ['노이즈캔슬링 헤드셋', '사무용 의자', '모니터암', '무선 충전 패드', '스마트 텀블러'];
+const SEP_RATIO = DATA.log.month_ratio['9'];
+const ROWS = DATA.rows.map(r => ({ ...r, m: +r.date.slice(5, 7) }));
+
+const state = { months: new Set(), regions: new Set(), products: new Set(), recorded: true, trend: 'month' };
+
+// ---------- 형식 ----------
+const nf = new Intl.NumberFormat('ko-KR');
+const won = v => nf.format(Math.round(v)) + '원';
+function compact(v) {
+  const a = Math.abs(v);
+  if (a >= 1e8) return (v / 1e8).toFixed(a >= 1e9 ? 1 : 2).replace(/\.?0+$/, '') + '억';
+  if (a >= 1e4) return nf.format(Math.round(v / 1e4)) + '만';
+  return nf.format(Math.round(v));
+}
+function compactParts(v) {
+  const a = Math.abs(v);
+  if (a >= 1e8) return [(v / 1e8).toFixed(2), '억원'];
+  if (a >= 1e4) return [nf.format(Math.round(v / 1e4)), '만원'];
+  return [nf.format(Math.round(v)), '원'];
+}
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+// ---------- 필터 ----------
+const sales = r => state.recorded ? r.sales : r.qty * r.price;
+function passes(r, skip) {
+  return (skip === 'month' || !state.months.size || state.months.has(r.m)) &&
+         (skip === 'region' || !state.regions.size || state.regions.has(r.region)) &&
+         (skip === 'product' || !state.products.size || state.products.has(r.product));
+}
+const sum = (arr, f) => arr.reduce((s, r) => s + f(r), 0);
+function groupSum(rows, key) {
+  const m = new Map();
+  rows.forEach(r => { const g = m.get(r[key]) || { sales: 0, qty: 0, n: 0 }; g.sales += sales(r); g.qty += r.qty; g.n++; m.set(r[key], g); });
+  return m;
+}
+
+function buildChips(id, values, set, label) {
+  const row = document.getElementById(id);
+  const all = document.createElement('button');
+  all.type = 'button'; all.className = 'chip all'; all.textContent = '전체';
+  all.onclick = () => { set.clear(); render(); };
+  row.appendChild(all);
+  values.forEach(v => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'chip'; b.dataset.v = v; b.textContent = label ? label(v) : v;
+    b.onclick = () => { toggle(set, v); render(); };
+    row.appendChild(b);
+  });
+}
+function toggle(set, v) {
+  set.has(v) ? set.delete(v) : set.add(v);
+  return set;
+}
+function syncChips(id, set) {
+  document.querySelectorAll('#' + id + ' .chip').forEach(b => {
+    const on = b.classList.contains('all') ? set.size === 0 : set.has(isNaN(b.dataset.v) ? b.dataset.v : +b.dataset.v);
+    b.setAttribute('aria-pressed', on);
+  });
+}
+
+// ---------- 숫자 애니메이션 ----------
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const counters = new Map();
+function countTo(el, to, fmt) {
+  const from = counters.get(el) ?? 0;
+  counters.set(el, to);
+  if (reduceMotion || from === to) { el.innerHTML = fmt(to); return; }
+  const t0 = performance.now(), dur = 900;
+  const step = now => {
+    const p = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - p, 3);
+    el.innerHTML = fmt(from + (to - from) * e);
+    if (p < 1 && counters.get(el) === to) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+  // rAF가 멈추는 환경(백그라운드 탭 등)에서도 최종값은 반드시 표시
+  setTimeout(() => { if (counters.get(el) === to) el.innerHTML = fmt(to); }, dur + 100);
+}
+
+// ---------- 툴팁 ----------
+const tip = document.getElementById('tip');
+function showTip(html, x, y) {
+  tip.innerHTML = html; tip.classList.add('on');
+  const w = tip.offsetWidth, h = tip.offsetHeight;
+  let left = x + 14, top = y - h - 12;
+  if (left + w > innerWidth - 8) left = x - w - 14;
+  if (left < 8) left = 8;
+  if (top < 8) top = y + 16;
+  tip.style.left = left + 'px'; tip.style.top = top + 'px';
+}
+const hideTip = () => tip.classList.remove('on');
+addEventListener('scroll', hideTip, { passive: true });
+
+// ---------- KPI ----------
+function renderKpis(rows) {
+  const s = sum(rows, sales), q = sum(rows, r => r.qty), n = rows.length;
+  const imp = rows.filter(r => r.imputed);
+  const unit = v => { const [a, b] = compactParts(v); return `${a}<small>${b}</small>`; };
+  countTo(document.getElementById('k-sales'), s, unit);
+  countTo(document.getElementById('k-qty'), q, v => `${nf.format(Math.round(v))}<small>개</small>`);
+  countTo(document.getElementById('k-cnt'), n, v => `${nf.format(Math.round(v))}<small>건</small>`);
+  countTo(document.getElementById('k-avg'), n ? s / n : 0, unit);
+  document.getElementById('k-sales-sub').textContent = n
+    ? `${won(s)} · 이 중 빈칸 보정 ${imp.length}건 ${compact(sum(imp, sales))}원` : '해당 거래 없음';
+  document.getElementById('k-qty-sub').textContent = `제품 ${new Set(rows.map(r => r.product)).size}종`;
+  document.getElementById('k-cnt-sub').textContent = `영업사원 ${new Set(rows.map(r => r.rep)).size}명 · 지역 ${new Set(rows.map(r => r.region)).size}곳`;
+  const top = [...groupSum(rows, 'product')].sort((a, b) => b[1].sales - a[1].sales)[0];
+  document.getElementById('k-avg-sub').textContent = top ? `매출 1위 제품: ${top[0]}` : '';
+}
+
+// ---------- 추이 (SVG) ----------
+function niceMax(v) {
+  if (v <= 0) return 1;
+  const p = Math.pow(10, Math.floor(Math.log10(v))), f = v / p;
+  return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * p;
+}
+function weekKey(date) {
+  const d = new Date(date + 'T00:00:00');
+  const mon = new Date(d); mon.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+  return mon.toISOString().slice(0, 10);
+}
+function renderTrend(rows) {
+  const box = document.getElementById('trend');
+  const W = Math.max(280, box.clientWidth), H = W < 480 ? 220 : 260;
+  const pad = { l: 56, r: 12, t: 28, b: 30 };
+  const iw = W - pad.l - pad.r, ih = H - pad.t - pad.b;
+  let pts;
+  if (state.trend === 'month') {
+    const g = groupSum(rows, 'm');
+    const ms = state.months.size ? MONTHS.filter(m => state.months.has(m)) : MONTHS;
+    pts = ms.map(m => ({ key: m, label: m + '월', v: g.get(m)?.sales || 0, n: g.get(m)?.n || 0, qty: g.get(m)?.qty || 0 }));
+  } else {
+    const g = new Map();
+    rows.forEach(r => { const k = weekKey(r.date); const o = g.get(k) || { v: 0, n: 0, qty: 0 }; o.v += sales(r); o.n++; o.qty += r.qty; g.set(k, o); });
+    // 3분기 전체 주 목록 (빈 주도 0으로 표시)
+    const keys = []; let d = new Date('2026-06-29T00:00:00');
+    while (d <= new Date('2026-09-30T00:00:00')) { keys.push(d.toISOString().slice(0, 10)); d.setDate(d.getDate() + 7); }
+    const ms = state.months.size ? state.months : new Set(MONTHS);
+    pts = keys.filter(k => {
+      const s = new Date(k + 'T00:00:00'), e = new Date(s); e.setDate(s.getDate() + 6);
+      return [...ms].some(m => (s.getMonth() + 1 === m) || (e.getMonth() + 1 === m));
+    }).map(k => { const [, mm, dd] = k.split('-'); return { key: k, label: `${+mm}/${+dd}`, ...(g.get(k) || { v: 0, n: 0, qty: 0 }) }; });
+  }
+  const max = niceMax(Math.max(...pts.map(p => p.v), 1));
+  const y = v => pad.t + ih - (v / max) * ih;
+  let s = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="매출 추이">`;
+  for (let i = 0; i <= 4; i++) {
+    const v = max * i / 4, yy = y(v);
+    s += `<line x1="${pad.l}" x2="${W - pad.r}" y1="${yy}" y2="${yy}" stroke="${i ? 'var(--grid)' : 'var(--baseline)'}" stroke-width="1"/>`;
+    s += `<text class="axis" x="${pad.l - 8}" y="${yy + 4}" text-anchor="end">${i ? compact(v) : '0'}</text>`;
+  }
+  const sepFlag = state.recorded && SEP_RATIO !== 1;
+  if (state.trend === 'month') {
+    const bw = Math.min(88, iw / pts.length * 0.5), step = iw / pts.length;
+    pts.forEach((p, i) => {
+      const cx = pad.l + step * (i + 0.5), x = cx - bw / 2, yy = y(p.v), h = pad.t + ih - yy, r = Math.min(4, h);
+      const prev = i > 0 ? pts[i - 1] : null;
+      p.delta = prev && prev.v ? (p.v - prev.v) / prev.v : null;
+      s += `<path d="M${x},${pad.t + ih}V${yy + r}Q${x},${yy} ${x + r},${yy}H${x + bw - r}Q${x + bw},${yy} ${x + bw},${yy + r}V${pad.t + ih}Z" fill="var(--series-1)"/>`;
+      s += `<text x="${cx}" y="${yy - 8}" text-anchor="middle" fill="var(--text-primary)" font-size="13" font-weight="600">${compact(p.v)}${p.key === 9 && sepFlag ? ' *' : ''}</text>`;
+      let lab = p.label;
+      if (p.delta != null && isFinite(p.delta)) lab += ` (${p.delta >= 0 ? '+' : ''}${(p.delta * 100).toFixed(1)}%)`;
+      s += `<text class="axis" x="${cx}" y="${H - 10}" text-anchor="middle" style="font-size:12px;fill:var(--text-secondary)">${lab}</text>`;
+      s += `<rect class="hit" data-i="${i}" x="${pad.l + step * i}" y="${pad.t}" width="${step}" height="${ih}" fill="transparent"/>`;
+    });
+  } else {
+    const step = pts.length > 1 ? iw / (pts.length - 1) : 0;
+    const X = i => pts.length > 1 ? pad.l + step * i : pad.l + iw / 2;
+    const line = pts.map((p, i) => `${i ? 'L' : 'M'}${X(i)},${y(p.v)}`).join('');
+    s += `<path d="${line}L${X(pts.length - 1)},${pad.t + ih}L${X(0)},${pad.t + ih}Z" fill="var(--series-1-soft)"/>`;
+    s += `<path d="${line}" fill="none" stroke="var(--series-1)" stroke-width="2" stroke-linejoin="round"/>`;
+    const every = Math.ceil(pts.length / (W < 480 ? 5 : 8));
+    pts.forEach((p, i) => {
+      s += `<circle cx="${X(i)}" cy="${y(p.v)}" r="4" fill="var(--series-1)" stroke="var(--surface-1)" stroke-width="2"/>`;
+      if (i % every === 0) s += `<text class="axis" x="${X(i)}" y="${H - 10}" text-anchor="middle">${p.label}</text>`;
+    });
+    s += `<line id="xhair" x1="0" x2="0" y1="${pad.t}" y2="${pad.t + ih}" stroke="var(--text-muted)" stroke-width="1" opacity="0"/>`;
+    pts.forEach((p, i) => {
+      const x0 = i ? (X(i) + X(i - 1)) / 2 : pad.l - 6, x1 = i < pts.length - 1 ? (X(i) + X(i + 1)) / 2 : W - pad.r + 6;
+      s += `<rect class="hit" data-i="${i}" x="${x0}" y="${pad.t}" width="${x1 - x0}" height="${ih}" fill="transparent"/>`;
+    });
+  }
+  s += '</svg>';
+  box.innerHTML = s;
+  box.querySelectorAll('.hit').forEach(el => {
+    const p = pts[+el.dataset.i];
+    const html = () => {
+      let t = state.trend === 'month' ? p.label : `${p.label} 주 (월~일)`;
+      let extra = p.delta != null && isFinite(p.delta) ? ` · 전월 대비 ${p.delta >= 0 ? '+' : ''}${(p.delta * 100).toFixed(1)}%` : '';
+      return `<div class="t">${t}</div><div class="v">${won(p.v)}</div><div class="s">${p.n}건 · ${nf.format(p.qty)}개${extra}</div>`;
+    };
+    const on = e => {
+      showTip(html(), e.clientX, e.clientY);
+      const xh = box.querySelector('#xhair');
+      if (xh) { const c = box.querySelectorAll('circle')[+el.dataset.i]; xh.setAttribute('x1', c.getAttribute('cx')); xh.setAttribute('x2', c.getAttribute('cx')); xh.setAttribute('opacity', 1); }
+    };
+    el.addEventListener('pointermove', on);
+    el.addEventListener('pointerdown', on);
+    el.addEventListener('pointerleave', () => { hideTip(); const xh = box.querySelector('#xhair'); if (xh) xh.setAttribute('opacity', 0); });
+  });
+  document.getElementById('trend-desc').textContent = state.trend === 'month'
+    ? '괄호 안은 전월 대비 증감률' : '주 시작일(월요일) 기준 · 첫 주와 마지막 주는 분기 경계로 일부 기간만 포함';
+  const showsSep = (!state.months.size || state.months.has(9));
+  document.getElementById('trend-note').innerHTML = showsSep
+    ? (state.recorded
+      ? `<span class="ic">⚠</span><span>* 9월 매출은 모든 거래가 수량×단가의 ${SEP_RATIO}배로 기록돼 있습니다(사유 미확인). 위쪽 스위치를 끄면 7·8월과 같은 기준(수량×단가)으로 비교할 수 있습니다. 9월 데이터는 26일까지만 있습니다.</span>`
+      : `<span class="ic">ⓘ</span><span>9월도 수량×단가 기준으로 계산한 값입니다(기록된 9월 매출보다 낮음). 9월 데이터는 26일까지만 있습니다.</span>`)
+    : '';
+}
+
+// ---------- 가로 막대 ----------
+function renderHBars(id, keys, rows, key, set) {
+  const g = groupSum(rows, key);
+  const items = keys.map(k => ({ k, ...(g.get(k) || { sales: 0, qty: 0, n: 0 }) })).sort((a, b) => b.sales - a.sales);
+  const max = Math.max(...items.map(i => i.sales), 1);
+  const box = document.getElementById(id);
+  // 기존 요소 재사용(막대 길이 애니메이션 유지)
+  const existing = new Map([...box.children].map(el => [el.dataset.k, el]));
+  items.forEach(it => {
+    let el = existing.get(it.k);
+    if (!el) {
+      el = document.createElement('button');
+      el.type = 'button'; el.className = 'hbar'; el.dataset.k = it.k;
+      el.innerHTML = `<span class="name"></span><span class="track"><span class="fill" style="width:0"></span></span><span class="val"></span>`;
+      el.onclick = () => { toggle(set, it.k); render(); };
+      el.addEventListener('pointermove', e => showTip(el._tip, e.clientX, e.clientY));
+      el.addEventListener('pointerleave', hideTip);
+    }
+    box.appendChild(el);
+    el.querySelector('.name').textContent = it.k;
+    el.querySelector('.val').innerHTML = `<b>${compact(it.sales)}</b>`;
+    el.classList.toggle('dim', set.size > 0 && !set.has(it.k));
+    el.setAttribute('aria-pressed', set.has(it.k));
+    el.setAttribute('aria-label', `${it.k} ${won(it.sales)}`);
+    el._tip = `<div class="t">${esc(it.k)}</div><div class="v">${won(it.sales)}</div><div class="s">${it.n}건 · ${nf.format(it.qty)}개</div>`;
+    requestAnimationFrame(() => el.querySelector('.fill').style.width = (it.sales / max * 100) + '%');
+  });
+}
+
+// ---------- 영업사원 순위 ----------
+function renderRank(rows) {
+  const g = groupSum(rows, 'rep');
+  const regionOf = new Map(ROWS.map(r => [r.rep, r.region]));
+  const items = [...g].map(([k, v]) => ({ k, ...v })).sort((a, b) => b.sales - a.sales);
+  const max = Math.max(...items.map(i => i.sales), 1);
+  const box = document.getElementById('rank');
+  if (!items.length) { box.innerHTML = '<div class="empty">해당 조건의 거래가 없습니다</div>'; return; }
+  box.innerHTML = items.map((it, i) => `
+    <div class="ritem${i === 0 ? ' top' : ''}">
+      <div class="no">${i + 1}</div>
+      <div class="who">${esc(it.k)}<span>${esc(regionOf.get(it.k))}</span></div>
+      <div class="amt">${compact(it.sales)}원</div>
+      <div class="bar"><i style="width:0" data-w="${it.sales / max * 100}"></i></div>
+      <div class="meta">${it.n}건 · ${nf.format(it.qty)}개</div>
+    </div>`).join('');
+  requestAnimationFrame(() => requestAnimationFrame(() => box.querySelectorAll('.bar i').forEach(b => b.style.width = b.dataset.w + '%')));
+}
+
+// ---------- 표 ----------
+function renderTable(rows) {
+  const sorted = [...rows].sort((a, b) => a.date.localeCompare(b.date));
+  document.getElementById('table-desc').textContent = `선택한 조건의 거래 ${sorted.length}건 · 노란 매출은 원본 빈칸을 계산값으로 채운 것`;
+  document.getElementById('tbody').innerHTML = sorted.map(r => `
+    <tr class="${r.imputed ? 'imp' : ''}"><td>${r.date}</td><td>${r.region}</td><td>${esc(r.product)}</td><td>${esc(r.rep)}</td>
+    <td class="num">${nf.format(r.qty)}</td><td class="num">${nf.format(r.price)}</td>
+    <td class="num sales">${nf.format(sales(r))}${r.imputed ? '<span class="tag">보정</span>' : ''}</td><td>${esc(r.memo)}</td></tr>`).join('');
+}
+
+// ---------- 전체 렌더 ----------
+function render() {
+  syncChips('f-month', state.months); syncChips('f-region', state.regions); syncChips('f-product', state.products);
+  const rows = ROWS.filter(r => passes(r));
+  renderKpis(rows);
+  renderTrend(rows.filter(r => passes(r)));
+  renderHBars('regions', REGIONS, ROWS.filter(r => passes(r, 'region')), 'region', state.regions);
+  renderHBars('products', PRODUCTS, ROWS.filter(r => passes(r, 'product')), 'product', state.products);
+  renderRank(rows);
+  if (document.getElementById('table-card').open) renderTable(rows);
+  const parts = [];
+  if (state.months.size) parts.push([...state.months].sort().map(m => m + '월').join('·'));
+  if (state.regions.size) parts.push([...state.regions].join('·'));
+  if (state.products.size) parts.push([...state.products].join('·'));
+  document.getElementById('fsummary').textContent = parts.length ? `적용: ${parts.join(' / ')} — ${rows.length}건` : `전체 ${rows.length}건`;
+}
+
+// ---------- 정리 내역 ----------
+function renderCleaning() {
+  const L = DATA.log;
+  const steps = L.steps;
+  const cnt = re => steps.filter(s => re.test(s.what)).reduce((a, s) => a + s.count, 0);
+  const ex = re => steps.filter(s => re.test(s.what)).flatMap(s => s.examples);
+  const dup = cnt(/중복/), sub = cnt(/소계/), imp = cnt(/빈칸/);
+  const fixes = cnt(/날짜|지역|제품|수량|단가|절사/);
+  document.getElementById('src').textContent = L.source;
+  document.getElementById('clean-desc').textContent = `원본 파일의 데이터 ${L.raw_rows}줄을 검사해 ${L.clean_rows}건의 거래로 정리했습니다. 원본 파일은 수정하지 않았습니다.`;
+  document.getElementById('clean-stats').innerHTML = [
+    [`${L.raw_rows} → ${L.clean_rows}`, '원본 줄 → 정리 후 거래'],
+    [dup + sub, `삭제 (중복 ${dup} · 소계 ${sub})`],
+    [imp, '매출 빈칸 채움'],
+    [fixes, '표기·형식 수정 건수'],
+  ].map(([b, s]) => `<div class="cstat"><b>${b}</b><span>${s}</span></div>`).join('');
+
+  const r = L.month_ratio, n = L.month_ratio_n;
+  document.getElementById('callouts').innerHTML = [
+    `<b>9월 매출이 수량×단가보다 ${Math.round((r['9'] - 1) * 100)}% 높게 기록됨.</b> 매출이 적혀 있는 9월 거래 ${n['9']}건이 모두 정확히 수량×단가×${r['9']}입니다(7월 ${n['7']}건·8월 ${n['8']}건은 모두 ×1.00). 단가 인상·부가세·입력 오류 중 무엇인지 확인이 필요합니다. 기본값은 기록된 금액이고, 필터 줄의 스위치로 수량×단가 기준으로 바꿔 볼 수 있습니다.`,
+    `<b>9월분 누락 가능성.</b> 원본 상단 메모에 “9월분 일부 누락??”이라고 적혀 있고, 9월 거래는 26일까지만 있습니다. 9월 수치는 확정치가 아닐 수 있습니다.`,
+    `<b>매출 빈칸 ${L.imputed_rows}건을 계산값으로 채움 (합계 ${won(L.imputed_total)}).</b> 수량·단가는 모두 있어서 매출 = 수량×단가로 채웠고, 9월은 같은 달 다른 거래와 맞춰 ×${r['9']}를 적용했습니다. 거래 상세 표에 ‘보정’ 표시가 있습니다.`,
+    `<b>중복 ${dup}건 삭제.</b> 일자·지역·제품·담당자·수량·단가·매출·비고가 모두 같은 줄만 중복으로 보고 지웠습니다. 실제로 같은 거래가 두 번 있었다면 다시 넣어야 하니 아래 목록을 확인해 주세요.`,
+  ].map(t => `<div class="callout"><span class="ic">⚠</span><p>${t}</p></div>`).join('');
+
+  const fmtEx = arr => arr.slice(0, 3).map(e => `<code>${esc(e)}</code>`).join(' ');
+  const groups = [
+    ['날짜 형식 통일', /날짜/, s => `${esc(s.what.replace('날짜 형식 통일: ', '').replace(' → YYYY-MM-DD', ''))} ${s.count}건 — 예: ${fmtEx(s.examples)}`,
+      '모두 <code>YYYY-MM-DD</code>로 통일. 연도가 없는 날짜(7/11, 7월19일 등)는 2026년으로 처리'],
+    ['지역명 통일', /지역/, s => `${esc(s.what)} ${s.count}건 — 예: ${fmtEx(s.examples)}`,
+      '영문·행정구역 표기(Seoul, 부산광역시, 대구시 등)를 서울·부산·대구·대전·광주 5개로 통일'],
+    ['제품명 통일', /제품/, s => `${s.count}건 — 예: ${fmtEx(s.examples)}`, '띄어쓰기만 다른 같은 제품을 하나로 합침 (5종)'],
+    ['숫자 칸 정리', /텍스트/, s => `${esc(s.what)} ${s.count}건 — 예: ${fmtEx(s.examples)}`, '“3개”, “₩18,000”처럼 글자로 들어간 숫자를 계산할 수 있는 숫자로 변환'],
+    ['매출 보정', /빈칸|절사/, s => `${esc(s.what)} ${s.count}건 — 예: ${fmtEx(s.examples)}`, '절사 오차: 9월 매출 중 계산값보다 1원 적게 들어간 값(소수점 버림)을 반올림 값으로 맞춤'],
+    ['행 삭제', /중복|소계/, s => `${esc(s.what)} ${s.count}건`, '데이터 중간에 끼어 있던 “소계” 줄과 완전히 같은 중복 줄을 제거. 제목·메모 줄은 데이터에서 제외'],
+  ];
+  document.getElementById('steps').innerHTML = groups.map(([title, re, line, note]) => {
+    const ss = steps.filter(s => re.test(s.what));
+    return `<div class="step"><h3>${title}<span>${ss.reduce((a, s) => a + s.count, 0)}건</span></h3>
+      <ul>${ss.map(s => `<li>${line(s)}</li>`).join('')}<li style="color:var(--text-muted)">${note}</li></ul></div>`;
+  }).join('');
+  document.getElementById('removed').innerHTML = L.removed.map(x =>
+    `<tr><td class="num">${x.row}</td><td>${esc(x.reason)}</td><td>${esc(x.raw.join(' | '))}</td></tr>`).join('');
+}
+
+// ---------- 초기화 ----------
+const d0 = ROWS.reduce((a, r) => r.date < a ? r.date : a, '9999'), d1 = ROWS.reduce((a, r) => r.date > a ? r.date : a, '');
+document.getElementById('period').textContent = `${d0.replaceAll('-', '.')} – ${d1.replaceAll('-', '.')} · 거래 ${ROWS.length}건 · 영업사원 6명 · 5개 지역`;
+buildChips('f-month', MONTHS, state.months, m => m + '월');
+buildChips('f-region', REGIONS, state.regions);
+buildChips('f-product', PRODUCTS, state.products);
+document.getElementById('reset').onclick = () => { state.months.clear(); state.regions.clear(); state.products.clear(); render(); };
+document.getElementById('basis').onchange = e => { state.recorded = e.target.checked; render(); };
+document.querySelectorAll('[data-trend]').forEach(b => b.onclick = () => {
+  state.trend = b.dataset.trend;
+  document.querySelectorAll('[data-trend]').forEach(x => x.setAttribute('aria-pressed', x === b));
+  renderTrend(ROWS.filter(r => passes(r)));
+});
+document.getElementById('table-card').addEventListener('toggle', e => { if (e.target.open) renderTable(ROWS.filter(r => passes(r))); });
+let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => renderTrend(ROWS.filter(r => passes(r))), 120); });
+renderCleaning();
+render();
+</script>
+</body>
+</html>

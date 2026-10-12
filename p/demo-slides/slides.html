@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>스마트 텀블러 2세대 출시 회의 보고</title>
+<style>
+  :root {
+    --bg: #000;
+    --ink: #f5f5f7;
+    --ink-2: #a1a1a6;
+    --ink-3: #6e6e73;
+    --line: rgba(255,255,255,.12);
+    --card: rgba(255,255,255,.05);
+    --accent: #2997ff;
+    --accent-2: #5ac8fa;
+    --warn: #ff9f0a;
+    --good: #30d158;
+    --ease: cubic-bezier(.2,.8,.2,1);
+    --fs-hero: clamp(56px, 13vmin, 150px);
+    --fs-h1: clamp(30px, 6.4vmin, 72px);
+    --fs-h2: clamp(22px, 3.8vmin, 40px);
+    --fs-body: clamp(15px, 2.3vmin, 24px);
+    --fs-small: clamp(12px, 1.7vmin, 17px);
+    --pad: clamp(22px, 6vmin, 96px);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: var(--bg); color: var(--ink); overflow: hidden; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Apple SD Gothic Neo", "Pretendard", "Noto Sans KR", "Malgun Gothic", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    word-break: keep-all;
+    letter-spacing: -0.02em;
+    user-select: none; -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: pan-y;
+  }
+  .num { font-variant-numeric: tabular-nums; letter-spacing: -0.035em; }
+
+  /* ---------- Deck & transitions ---------- */
+  .deck { position: fixed; inset: 0; height: 100dvh; }
+  .slide {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: var(--pad);
+    padding-top: max(var(--pad), env(safe-area-inset-top));
+    padding-bottom: max(calc(var(--pad) + 18px), env(safe-area-inset-bottom));
+    opacity: 0; visibility: hidden;
+    transform: translateX(5%) scale(.97);
+    filter: blur(8px);
+    transition: opacity .7s var(--ease), transform .9s var(--ease), filter .7s var(--ease), visibility 0s linear .9s;
+  }
+  .slide.past { transform: translateX(-5%) scale(.97); }
+  .slide.active {
+    opacity: 1; visibility: visible; transform: none; filter: none;
+    transition: opacity .7s var(--ease), transform .9s var(--ease), filter .7s var(--ease), visibility 0s;
+  }
+  .inner { width: 100%; max-width: 1200px; margin: 0 auto; }
+
+  /* staggered reveal */
+  .r { opacity: 0; transform: translateY(26px); transition: opacity .8s var(--ease), transform 1s var(--ease); }
+  .active .r { opacity: 1; transform: none; transition-delay: calc(var(--d, 0) * 110ms + 250ms); }
+
+  /* ---------- Typography ---------- */
+  .eyebrow { font-size: var(--fs-small); font-weight: 600; color: var(--accent); letter-spacing: .02em; margin-bottom: 1.1em; }
+  h1 { font-size: var(--fs-h1); font-weight: 700; line-height: 1.12; letter-spacing: -0.035em; }
+  h2 { font-size: var(--fs-h2); font-weight: 700; line-height: 1.2; letter-spacing: -0.03em; }
+  .lead { font-size: var(--fs-body); color: var(--ink-2); line-height: 1.55; margin-top: 1em; }
+  .muted { color: var(--ink-3); }
+  .grad {
+    background: linear-gradient(100deg, #fff 0%, #cfe6ff 40%, var(--accent) 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .note { font-size: var(--fs-small); color: var(--ink-3); margin-top: 2.2em; line-height: 1.6; }
+
+  /* ---------- 1. Cover ---------- */
+  .cover { text-align: center; align-items: center; }
+  .cover .glow {
+    position: absolute; width: 90vmax; height: 90vmax; left: 50%; top: 55%;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(closest-side, rgba(41,151,255,.22), rgba(41,151,255,0) 70%);
+    pointer-events: none;
+  }
+  .cover h1 { font-size: var(--fs-hero); line-height: 1.04; }
+  .cover .meta { margin-top: 2.4em; font-size: var(--fs-small); color: var(--ink-3); line-height: 1.8; }
+  .cover .tag { display: inline-block; border: 1px solid var(--line); border-radius: 99px; padding: .4em 1em; font-size: var(--fs-small); color: var(--ink-2); margin-bottom: 2em; }
+
+  /* ---------- 2. Summary ---------- */
+  .summary h1 { font-size: clamp(30px, 7vmin, 84px); line-height: 1.18; }
+  .chips { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 2.2em; }
+  .chip { border: 1px solid var(--line); background: var(--card); border-radius: 99px; padding: .55em 1.1em; font-size: var(--fs-small); color: var(--ink); }
+  .chip b { color: var(--accent-2); font-weight: 600; margin-right: .4em; }
+
+  /* ---------- Cards / grid ---------- */
+  .grid { display: grid; gap: clamp(12px, 2vmin, 22px); margin-top: clamp(22px, 4vmin, 48px); }
+  .g3 { grid-template-columns: repeat(3, 1fr); }
+  .g2 { grid-template-columns: 1fr 1fr; }
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 22px;
+    padding: clamp(18px, 3vmin, 32px);
+  }
+  .card .k { font-size: var(--fs-small); color: var(--ink-2); }
+  .card .v { font-size: clamp(32px, 6vmin, 64px); font-weight: 700; margin-top: .2em; line-height: 1.1; }
+  .card .v small { font-size: .4em; font-weight: 600; color: var(--ink-2); margin-left: .15em; }
+  .card .s { font-size: var(--fs-small); color: var(--ink-3); margin-top: .5em; line-height: 1.5; }
+
+  /* ---------- 3. Results ---------- */
+  .hero-row { display: flex; align-items: flex-end; gap: clamp(16px, 4vmin, 48px); flex-wrap: wrap; margin-top: clamp(14px, 3vmin, 32px); }
+  .hero-num { font-size: var(--fs-hero); font-weight: 800; line-height: .95; }
+  .hero-num small { font-size: .32em; font-weight: 600; color: var(--ink-2); margin-left: .1em; }
+  .hero-cap { font-size: var(--fs-body); color: var(--ink-2); padding-bottom: .6em; line-height: 1.5; }
+
+  /* ---------- 4. Complaint → Fix ---------- */
+  .meter { height: 12px; border-radius: 99px; background: rgba(255,255,255,.08); margin-top: 1.2em; overflow: hidden; }
+  .meter i { display: block; height: 100%; width: 0; border-radius: 99px; background: var(--warn); transition: width 1.4s var(--ease) .9s; }
+  .active .meter i { width: 38%; }
+  .meter-lab { display: flex; justify-content: space-between; font-size: var(--fs-small); color: var(--ink-3); margin-top: .6em; }
+  .fix-list { list-style: none; margin-top: 1em; }
+  .fix-list li { padding: .85em 0; border-top: 1px solid var(--line); font-size: var(--fs-body); line-height: 1.45; }
+  .fix-list li:first-child { border-top: 0; padding-top: .2em; }
+  .fix-list li .s { margin-top: .25em; }
+  .swatches { display: flex; gap: 14px; margin-top: .7em; flex-wrap: wrap; }
+  .sw { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: var(--fs-small); color: var(--ink-2); }
+  .sw i { width: clamp(28px, 4.5vmin, 42px); height: clamp(28px, 4.5vmin, 42px); border-radius: 50%; border: 1px solid rgba(255,255,255,.18); }
+  .sw.off { opacity: .35; text-decoration: line-through; }
+  .badge { display: inline-block; font-size: .72em; font-weight: 600; padding: .2em .6em; border-radius: 6px; vertical-align: .15em; margin-left: .4em; }
+  .badge.blue { background: rgba(41,151,255,.18); color: var(--accent-2); }
+  .badge.orange { background: rgba(255,159,10,.16); color: var(--warn); }
+
+  /* ---------- 5. Price chart ---------- */
+  .chart { margin-top: clamp(22px, 4.5vmin, 54px); position: relative; }
+  .bar-row { display: grid; grid-template-columns: clamp(92px, 16vmin, 170px) 1fr; align-items: center; gap: 14px; padding: clamp(7px, 1.3vmin, 12px) 0; position: relative; }
+  .bar-row .lab { font-size: var(--fs-body); color: var(--ink-2); text-align: right; line-height: 1.2; }
+  .bar-row.me .lab { color: var(--ink); font-weight: 700; }
+  .track { position: relative; height: clamp(30px, 5.2vmin, 52px); }
+  .bar {
+    position: absolute; left: 0; top: 0; bottom: 0; width: 0;
+    background: #3a3a3c; border-radius: 0 6px 6px 0;
+    transition: width 1.2s var(--ease);
+  }
+  .bar-row.me .bar { background: linear-gradient(90deg, #0a6cff, var(--accent-2)); }
+  .active .bar { width: var(--w); transition-delay: calc(var(--d) * 120ms + 500ms); }
+  .bar-val {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    left: calc(var(--w) + 12px); white-space: nowrap;
+    font-size: var(--fs-body); font-weight: 600; color: var(--ink-2);
+    opacity: 0; transition: opacity .6s var(--ease);
+  }
+  .bar-row.me .bar-val { color: var(--ink); }
+  .active .bar-val { opacity: 1; transition-delay: calc(var(--d) * 120ms + 1200ms); }
+  .bar-row:hover .bar { filter: brightness(1.25); }
+  .axis { display: grid; grid-template-columns: clamp(92px, 16vmin, 170px) 1fr; gap: 14px; margin-top: 6px; }
+  .ticks { position: relative; height: 1.4em; border-top: 1px solid var(--line); font-size: var(--fs-small); color: var(--ink-3); }
+  .ticks span { position: absolute; top: .4em; transform: translateX(-50%); }
+  .ticks span:first-child { transform: none; }
+  .gridlines { position: absolute; top: 0; bottom: 0; right: 0; pointer-events: none; }
+  .gridlines i { position: absolute; top: 0; bottom: 0; width: 1px; background: rgba(255,255,255,.06); }
+  .tip {
+    position: fixed; pointer-events: none; z-index: 20;
+    background: rgba(28,28,30,.92); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px;
+    font-size: 14px; color: var(--ink); opacity: 0; transition: opacity .15s;
+  }
+  .tip b { display: block; font-size: 12px; color: var(--ink-2); font-weight: 500; margin-bottom: 2px; }
+
+  /* ---------- 6. Timeline ---------- */
+  .tl { position: relative; margin-top: clamp(40px, 8vmin, 90px); display: grid; grid-template-columns: repeat(5, 1fr); }
+  .tl::before { content: ""; position: absolute; left: 0; right: 0; top: 9px; height: 2px; background: var(--line); }
+  .tl .prog { position: absolute; left: 0; top: 9px; height: 2px; width: 0; background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition: width 2s var(--ease) .5s; }
+  .active .tl .prog { width: 60%; }
+  .ms { position: relative; padding-top: 34px; padding-right: 12px; }
+  .ms .dot { position: absolute; top: 2px; left: 0; width: 16px; height: 16px; border-radius: 50%; background: #1c1c1e; border: 2px solid var(--accent); }
+  .ms.key .dot { background: var(--accent); box-shadow: 0 0 0 6px rgba(41,151,255,.2); }
+  .ms.alt .dot { border-style: dashed; border-color: var(--ink-3); }
+  .ms .date { font-size: clamp(22px, 4vmin, 40px); font-weight: 700; }
+  .ms.alt .date { color: var(--ink-3); }
+  .ms .what { font-size: var(--fs-body); color: var(--ink); margin-top: .35em; line-height: 1.35; }
+  .ms .s { font-size: var(--fs-small); color: var(--ink-3); margin-top: .35em; line-height: 1.45; }
+
+  /* ---------- 7. Decisions & risks ---------- */
+  .dlist { list-style: none; margin-top: .8em; }
+  .dlist li { display: flex; gap: .7em; align-items: baseline; padding: .55em 0; font-size: var(--fs-body); line-height: 1.4; border-top: 1px solid var(--line); }
+  .dlist li:first-child { border-top: 0; }
+  .dlist .ic { flex: none; width: 1.3em; height: 1.3em; border-radius: 50%; display: inline-grid; place-items: center; font-size: .72em; font-weight: 800; transform: translateY(.1em); }
+  .ok .ic { background: rgba(48,209,88,.18); color: var(--good); }
+  .rk .ic { background: rgba(255,159,10,.18); color: var(--warn); }
+  .dlist .s { display: block; font-size: var(--fs-small); color: var(--ink-3); margin-top: .15em; }
+  .card h2 { font-size: clamp(18px, 2.8vmin, 28px); }
+
+  /* ---------- 8. To-do ---------- */
+  .todo { margin-top: clamp(20px, 4vmin, 44px); border-top: 1px solid var(--line); }
+  .todo .row { display: grid; grid-template-columns: clamp(80px, 13vmin, 150px) clamp(84px, 14vmin, 170px) 1fr; gap: 16px; align-items: baseline; padding: clamp(12px, 2.2vmin, 22px) 0; border-bottom: 1px solid var(--line); }
+  .todo .due { font-size: clamp(22px, 4vmin, 40px); font-weight: 700; color: var(--accent-2); }
+  .todo .due small { font-size: .45em; color: var(--ink-3); font-weight: 600; margin-left: .2em; }
+  .todo .who { font-size: var(--fs-body); font-weight: 600; }
+  .todo .who small { display: block; font-size: var(--fs-small); color: var(--ink-3); font-weight: 400; margin-top: .15em; }
+  .todo .task { font-size: var(--fs-body); color: var(--ink-2); line-height: 1.45; }
+  .next { margin-top: clamp(18px, 3.5vmin, 36px); display: inline-flex; gap: .6em; align-items: center; font-size: var(--fs-body); color: var(--ink-2); }
+  .next b { color: var(--ink); }
+
+  /* ---------- Chrome (progress, counter, hint) ---------- */
+  .progress { position: fixed; left: 0; bottom: 0; height: 3px; background: var(--accent); width: 0; transition: width .6s var(--ease); z-index: 10; }
+  .counter { position: fixed; right: max(18px, env(safe-area-inset-right)); bottom: max(14px, env(safe-area-inset-bottom)); font-size: 12px; color: var(--ink-3); z-index: 10; }
+  .hint { position: fixed; left: 50%; bottom: max(14px, env(safe-area-inset-bottom)); transform: translateX(-50%); font-size: 12px; color: var(--ink-3); transition: opacity .8s; z-index: 10; white-space: nowrap; }
+  .hint.hide { opacity: 0; }
+
+  /* ---------- Portrait / phone ---------- */
+  @media (max-aspect-ratio: 1/1) {
+    :root {
+      --fs-hero: clamp(52px, 17vw, 120px);
+      --fs-h1: clamp(28px, 8.2vw, 56px);
+      --fs-h2: clamp(20px, 6vw, 36px);
+      --fs-body: clamp(15px, 4.1vw, 22px);
+      --fs-small: clamp(12px, 3.3vw, 16px);
+      --pad: clamp(22px, 6.5vw, 56px);
+    }
+    .g3, .g2 { grid-template-columns: 1fr; }
+    .g3.keep2 { grid-template-columns: 1fr 1fr; }
+    .g3.keep2 .card:first-child { grid-column: 1 / -1; }
+    .card .v { font-size: clamp(30px, 9vw, 52px); }
+    .summary h1 { font-size: clamp(28px, 8.6vw, 60px); }
+    .hero-row { flex-direction: column; align-items: flex-start; gap: 6px; }
+    .hero-cap { padding-bottom: 0; }
+
+    .bar-row, .axis { grid-template-columns: 1fr; gap: 6px; }
+    .axis > :first-child { display: none; }
+    .bar-row .lab { text-align: left; }
+    .bar-row { padding: 6px 0; }
+
+    .tl { grid-template-columns: 1fr; margin-top: 28px; }
+    .tl::before { left: 7px; right: auto; top: 6px; bottom: 6px; width: 2px; height: auto; }
+    .tl .prog { left: 7px; top: 6px; width: 2px !important; height: 0; transition: height 2s var(--ease) .5s; }
+    .active .tl .prog { height: 64%; }
+    .ms { padding: 0 0 clamp(14px, 3.4vh, 26px) 38px; }
+    .ms .dot { top: .4em; left: 0; }
+    .ms .date { font-size: clamp(20px, 6vw, 32px); }
+    .ms .what { margin-top: .15em; }
+    .ms .s { margin-top: .15em; }
+
+    .todo .row { grid-template-columns: auto 1fr; gap: 4px 16px; }
+    .todo .task { grid-column: 1 / -1; }
+    .dlist li { padding: .45em 0; }
+    .card { border-radius: 18px; }
+  }
+  @media (max-aspect-ratio: 1/1) and (max-height: 700px) {
+    .note { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .slide, .r, .bar, .meter i, .tl .prog { transition-duration: .01s !important; transition-delay: 0s !important; filter: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+  <!-- 1. 표지 -->
+  <section class="slide cover">
+    <div class="glow"></div>
+    <div class="inner">
+      <div class="r tag" style="--d:0">한빛상사 · 신제품 출시 회의 보고</div>
+      <h1 class="r" style="--d:1">스마트 텀블러<br><span class="grad">2세대</span></h1>
+      <p class="r lead" style="--d:2">출시 회의 결과 보고</p>
+      <p class="r meta" style="--d:3">
+        회의 10/12(월) 14:00 · 3층 소회의실<br>
+        참석 김팀장, 최유나 과장, 이서준 대리, 정하늘 주임, 박지민 사원<br>
+        ※ 가상 데이터
+      </p>
+    </div>
+  </section>
+
+  <!-- 2. 한 줄 요약 -->
+  <section class="slide summary">
+    <div class="inner">
+      <div class="r eyebrow" style="--d:0">한 줄 요약</div>
+      <h1 class="r" style="--d:1">세척 불만을 해결한 <span class="grad">분리형 뚜껑</span>으로,<br>11월 20일 연말 시즌에 출시합니다.</h1>
+      <div class="r chips" style="--d:2">
+        <span class="chip"><b>출시</b>11/20</span>
+        <span class="chip"><b>가격</b>24,900원</span>
+        <span class="chip"><b>컬러</b>3종</span>
+        <span class="chip"><b>사전예약</b>11/6 – 11/19 · 목표 1,200개</span>
+      </div>
+      <p class="r note" style="--d:3">단, 금형 2차 수정본이 10/30 정상 입고되는 것이 전제입니다.</p>
+    </div>
+  </section>
+
+  <!-- 3. 1세대 성과 -->
+  <section class="slide">
+    <div class="inner">
+      <div class="r eyebrow" style="--d:0">1세대 성과 · 3분기</div>
+      <h2 class="r" style="--d:1">1세대는 이미 시장 검증을 마쳤습니다.</h2>
+      <div class="r hero-row" style="--d:2">
+        <div class="hero-num grad num"><span data-count="4820">4,820</span><small>개</small></div>
+        <div class="hero-cap">3분기 판매량</div>
+      </div>
+      <div class="grid g3 keep2">
+        <div class="r card" style="--d:3">
+          <div class="k">9월 판매</div>
+          <div class="v num"><span data-count="2110">2,110</span><small>개</small></div>
+          <div class="s">3분기 중 가장 많이 팔린 달</div>
+        </div>
+        <div class="r card" style="--d:4">
+          <div class="k">온라인 리뷰 평점</div>
+          <div class="v num"><span data-count="4.6" data-dec="1">4.6</span></div>
+          <div class="s">재구매 문의 다수</div>
+        </div>
+        <div class="r card" style="--d:5">
+          <div class="k">기업 선물 견적 요청</div>
+          <div class="v num">2<small>곳</small></div>
+          <div class="s">새솔인쇄 300개 · 다온물산 500개</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. 고객 불만 → 2세대 개선 -->
+  <section class="slide">
+    <div class="inner">
+      <div class="r eyebrow" style="--d:0">고객 불만과 2세대 개선점</div>
+      <h2 class="r" style="--d:1">가장 큰 불만을 정면으로 해결했습니다.</h2>
+      <div class="grid g2">
+        <div class="r card" style="--d:2">
+          <div class="k">불만 1위</div>
+          <div class="v" style="font-size:clamp(26px,4.4vmin,46px)">“뚜껑 세척이 어려워요”</div>
+          <div class="meter"><i></i></div>
+          <div class="meter-lab"><span>전체 불만 중 <b class="num" style="color:var(--warn)">38%</b></span><span>100%</span></div>
+        </div>
+        <div class="r card" style="--d:3">
+          <div class="k">2세대에서 바뀌는 점</div>
+          <ul class="fix-list">
+            <li><b>뚜껑 분리형</b><span class="badge blue">핵심 메시지</span>
+              <div class="s muted">세척 불만 해결 — 마케팅에서 반드시 강조</div></li>
+            <li><b>컬러 4종 → 3종</b>
+              <div class="swatches">
+                <span class="sw"><i style="background:#1d2333"></i>미드나잇</span>
+                <span class="sw"><i style="background:#d8c3a5"></i>샌드</span>
+                <span class="sw"><i style="background:#9caf88"></i>세이지</span>
+                <span class="sw off"><i style="background:#ff7f6b"></i>코랄</span>
+              </div>
+              <div class="s muted">코랄은 반응이 좋지 않아 제외</div></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. 가격 비교 -->
+  <section class="slide">
+    <div class="inner">
+      <div class="r eyebrow" style="--d:0">가격 비교</div>
+      <h2 class="r" style="--d:1">판매가 24,900원 — 경쟁사 A와 B 사이에 위치합니다.</h2>
+      <div class="chart r" style="--d:2" id="chart">
+        <!-- scale: 0 – 30,000원 -->
+        <div class="bar-row" style="--w:90%;--d:0" data-k="경쟁사 A" data-v="27,000원">
+          <div class="lab">경쟁사 A</div>
+          <div class="track"><div class="bar"></div><div class="bar-val num">27,000원</div></div>
+        </div>
+        <div class="bar-row me" style="--w:83%;--d:1" data-k="2세대 (예정)" data-v="24,900원 · 원가 9,400원">
+          <div class="lab">2세대</div>
+          <div class="track"><div class="bar"></div><div class="bar-val num">24,900원</div></div>
+        </div>
+        <div class="bar-row" style="--w:73.333%;--d:2" data-k="경쟁사 B" data-v="22,000원">
+          <div class="lab">경쟁사 B</div>
+          <div class="track"><div class="bar"></div><div class="bar-val num">22,000원</div></div>
+        </div>
+        <div class="bar-row" style="--w:60%;--d:3" data-k="1세대" data-v="18,000원">
+          <div class="lab">1세대</div>
+          <div class="track"><div class="bar"></div><div class="bar-val num">18,000원</div></div>
+        </div>
+        <div class="axis">
+          <div></div>
+          <div class="ticks num">
+            <span style="left:0">0</span>
+            <span style="left:33.333%">10,000</span>
+            <span style="left:66.667%">20,000</span>
+            <span style="left:100%">30,000원</span>
+          </div>
+        </div>
+      </div>
+      <p class="r note" style="--d:3">2세대 개당 원가 9,400원 기준 · 이서준 대리 원가표 최종 확정 후 결재 예정(10/16)</p>
+    </div>
+  </section>
+
+  <!-- 6. 출시 일정 -->
+  <section class="slide">
+    <div class="inner">
+      <div class="r eyebrow" style="--d:0">출시 일정</div>
+      <h2 class="r" style="--d:1">연말 선물 시즌을 겨냥한 11월 출시 일정</h2>
+      <div class="tl r" style="--d:2">
+        <div class="prog"></div>
+        <div class="ms">
+          <div class="dot"></div>
+          <div class="date num">10/17</div>
+          <div class="what">본부장 보고</div>
+          <div class="s">김팀장</div>
+        </div>
+        <div class="ms key">
+          <div class="dot"></div>
+          <div class="date num">10/30</div>
+          <div class="what">금형 2차 수정</div>
+          <div class="s">출시일 확정 조건</div>
+        </div>
+        <div class="ms">
+          <div class="dot"></div>
+          <div class="date num">11/6</div>
+          <div class="what">사전예약 시작</div>
+          <div class="s">~11/19 · 인스타 + 사내몰</div>
+        </div>
+        <div class="ms key">
+          <div class="dot"></div>
+          <div class="date num">11/20</div>
+          <div class="what">정식 출시</div>
+          <div class="s">연말 선물 시즌 대응</div>
+        </div>
+        <div class="ms alt">
+          <div class="dot"></div>
+          <div class="date num">12/4</div>
+          <div class="what">대안 출시일</div>
+          <div class="s">금형 지연 시</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. 결정사항 · 리스크 -->
+  <section class="slide">
+    <div class="inner">
+      <div class="r eyebrow" style="--d:0">결정사항 · 리스크</div>
+      <h2 class="r" style="--d:1">무엇을 정했고, 무엇을 지켜봐야 하는가.</h2>
+      <div class="grid g2">
+        <div class="r card" style="--d:2">
+          <h2>결정사항</h2>
+          <ul class="dlist ok">
+            <li><span class="ic">✓</span><span>출시일 <b>11/20</b><span class="s">금형 10/30 OK 전제</span></span></li>
+            <li><span class="ic">✓</span><span>판매가 <b class="num">24,900원</b></span></li>
+            <li><span class="ic">✓</span><span>컬러 <b>3종</b> (미드나잇 · 샌드 · 세이지)</span></li>
+            <li><span class="ic">✓</span><span>사전예약 <b>11/6 – 11/19</b></span></li>
+            <li><span class="ic">✓</span><span>이벤트 예산 <b class="num">300만원</b> · 목표 <b class="num">1,200개</b><span class="s">당초 제안 1,500개에서 하향 조정</span></span></li>
+          </ul>
+        </div>
+        <div class="r card" style="--d:3">
+          <h2>리스크</h2>
+          <ul class="dlist rk">
+            <li><span class="ic">!</span><span><b>금형 지연</b><span class="s">10/30 미입고 시 출시일 12/4로 연기</span></span></li>
+            <li><span class="ic">!</span><span><b>물류 리드타임 2주</b><span class="s">중국 공장 물류에 2주 소요 — 금형 일정과 맞물림</span></span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8. 담당자별 할 일 -->
+  <section class="slide">
+    <div class="inner">
+      <div class="r eyebrow" style="--d:0">담당자별 할 일</div>
+      <h2 class="r" style="--d:1">마감일 순으로 정리했습니다.</h2>
+      <div class="todo">
+        <div class="r row" style="--d:2"><div class="due num">10/15</div><div class="who">최유나<small>과장 · 영업</small></div><div class="task">기업 견적서 2건 (새솔인쇄 · 다온물산)</div></div>
+        <div class="r row" style="--d:3"><div class="due num">10/16</div><div class="who">이서준<small>대리</small></div><div class="task">원가표 최종 + 가격 결재 상신</div></div>
+        <div class="r row" style="--d:4"><div class="due num">10/17<small>금</small></div><div class="who">김팀장<small>팀장</small></div><div class="task">본부장 보고</div></div>
+        <div class="r row" style="--d:5"><div class="due num">10/20</div><div class="who">박지민<small>사원</small></div><div class="task">사전예약 이벤트 기획안</div></div>
+        <div class="r row" style="--d:6"><div class="due num">10/23</div><div class="who">정하늘<small>주임 · 디자인</small></div><div class="task">컬러 3종 렌더 이미지 · 상세페이지 시안</div></div>
+      </div>
+      <div class="r next" style="--d:7">다음 회의 <b>10/19(월) 14:00</b></div>
+    </div>
+  </section>
+
+</div>
+
+<div class="tip" id="tip"></div>
+<div class="progress" id="progress"></div>
+<div class="counter num" id="counter"></div>
+<div class="hint" id="hint">← → 키 · 클릭 · 스와이프로 넘기기</div>
+
+<script>
+(() => {
+  const slides = [...document.querySelectorAll('.slide')];
+  const progress = document.getElementById('progress');
+  const counter = document.getElementById('counter');
+  const hint = document.getElementById('hint');
+  let cur = -1;
+
+  const fmt = (n, dec) => dec ? n.toFixed(dec) : Math.round(n).toLocaleString('ko-KR');
+  function countUp(slide) {
+    slide.querySelectorAll('[data-count]').forEach(el => {
+      const end = parseFloat(el.dataset.count), dec = +el.dataset.dec || 0;
+      const t0 = performance.now() + 350, dur = 1400;
+      const step = now => {
+        const p = Math.min(1, Math.max(0, (now - t0) / dur));
+        el.textContent = fmt(end * (1 - Math.pow(1 - p, 4)), dec);
+        if (p < 1) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+      setTimeout(() => { el.textContent = fmt(end, dec); }, 350 + dur + 300);
+    });
+  }
+
+  function go(n) {
+    n = Math.max(0, Math.min(slides.length - 1, n));
+    if (n === cur) return;
+    slides.forEach((s, i) => {
+      s.classList.toggle('active', i === n);
+      s.classList.toggle('past', i < n);
+    });
+    cur = n;
+    countUp(slides[n]);
+    progress.style.width = ((n + 1) / slides.length * 100) + '%';
+    counter.textContent = (n + 1) + ' / ' + slides.length;
+    history.replaceState(null, '', '#' + (n + 1));
+    if (n > 0) hint.classList.add('hide');
+  }
+  const next = () => go(cur + 1), prev = () => go(cur - 1);
+
+  document.addEventListener('keydown', e => {
+    if (['ArrowRight', 'ArrowDown', 'PageDown', ' ', 'Enter'].includes(e.key)) { e.preventDefault(); next(); }
+    else if (['ArrowLeft', 'ArrowUp', 'PageUp', 'Backspace'].includes(e.key)) { e.preventDefault(); prev(); }
+    else if (e.key === 'Home') go(0);
+    else if (e.key === 'End') go(slides.length - 1);
+  });
+
+  // 클릭: 화면 왼쪽 1/4은 이전, 나머지는 다음
+  let touched = false;
+  document.addEventListener('click', e => {
+    if (touched) return;
+    e.clientX < window.innerWidth * 0.25 ? prev() : next();
+  });
+
+  // 스와이프 (탭은 다음 장)
+  let sx = 0, sy = 0, st = 0;
+  document.addEventListener('touchstart', e => {
+    touched = true;
+    sx = e.touches[0].clientX; sy = e.touches[0].clientY; st = Date.now();
+  }, { passive: true });
+  document.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
+    const ax = Math.abs(dx), ay = Math.abs(dy);
+    if (Math.max(ax, ay) > 40) {
+      if (ax > ay) dx < 0 ? next() : prev();
+      else dy < 0 ? next() : prev();
+    } else if (Date.now() - st < 400) {
+      sx < window.innerWidth * 0.25 ? prev() : next();
+    }
+  }, { passive: true });
+
+  // 차트 툴팁 (마우스)
+  const tip = document.getElementById('tip');
+  document.querySelectorAll('.bar-row').forEach(row => {
+    row.addEventListener('mousemove', e => {
+      tip.innerHTML = '<b>' + row.dataset.k + '</b>' + row.dataset.v;
+      tip.style.left = (e.clientX + 14) + 'px';
+      tip.style.top = (e.clientY + 14) + 'px';
+      tip.style.opacity = 1;
+    });
+    row.addEventListener('mouseleave', () => tip.style.opacity = 0);
+  });
+
+  const start = parseInt(location.hash.slice(1), 10);
+  go(isNaN(start) ? 0 : start - 1);
+})();
+</script>
+</body>
+</html>

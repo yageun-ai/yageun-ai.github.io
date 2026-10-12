@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>엉망 엑셀이 클릭되는 대시보드로 · AI 모르면 야근</title>
+<meta name="description" content="Claude Opus 5.5에 프롬프트 한 번 보내서 만든 매출 대시보드. 실제로 보낸 프롬프트 원문, 원본 가상 엑셀, 결과 파일 그대로."><meta name="theme-color" content="#0B1B3A">
+<meta property="og:title" content="엉망 엑셀이 클릭되는 대시보드로"><meta property="og:description" content="Claude Opus 5.5에 프롬프트 한 번 보내서 만든 매출 대시보드. 실제로 보낸 프롬프트 원문, 원본 가상 엑셀, 결과 파일 그대로.">
+<style>
+:root{--navy:#0B1B3A;--navy2:#12285A;--card:#102551;--line:#27458f;--yel:#FFD21F;--txt:#EAF0FF;--dim:#9fb3df}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--navy);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Malgun Gothic","Noto Sans KR",sans-serif;line-height:1.6;font-size:17px}
+.wrap{max-width:640px;margin:0 auto;padding:20px 18px 64px}
+header{display:flex;align-items:center;gap:10px;padding:6px 0 18px}
+.logo{position:relative;background:var(--navy2);border:2px solid var(--line);border-radius:14px;padding:6px 14px 6px 12px;font-weight:900;font-size:22px;letter-spacing:-.5px}
+.logo i{font-style:normal;position:absolute;top:-9px;left:-8px;background:var(--yel);color:var(--navy);font-size:11px;padding:2px 6px;border-radius:6px;font-weight:900}
+.brand{font-size:14px;color:var(--dim)}
+h1{font-size:30px;line-height:1.25;margin:6px 0 10px;letter-spacing:-1px}
+h1 em{font-style:normal;color:var(--yel)}
+.lead{color:var(--dim);margin:0 0 22px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;margin:0 0 18px}
+.tag{display:inline-block;background:var(--yel);color:var(--navy);font-weight:800;font-size:13px;padding:3px 10px;border-radius:8px;margin-bottom:8px}
+h2{font-size:21px;margin:0 0 6px;letter-spacing:-.5px}
+.meta{font-size:14px;color:var(--dim);margin:0 0 12px}
+pre{white-space:pre-wrap;word-break:keep-all;overflow-wrap:anywhere;background:#0a1735;border:1px solid var(--line);border-radius:12px;padding:14px;font:15.5px/1.7 inherit;font-family:inherit;margin:0 0 12px;user-select:all}
+button{font:inherit;font-weight:800;background:var(--yel);color:var(--navy);border:0;border-radius:12px;padding:13px 18px;width:100%;cursor:pointer;min-height:48px}
+button:active{transform:scale(.98)}
+.steps{counter-reset:s;list-style:none;padding:0;margin:0}
+.steps li{counter-increment:s;padding:8px 0 8px 40px;position:relative}
+.steps li:before{content:counter(s);position:absolute;left:0;top:8px;width:28px;height:28px;border-radius:50%;background:var(--yel);color:var(--navy);font-weight:900;text-align:center;line-height:28px}
+details{border-top:1px solid var(--line);padding:12px 0}
+details:first-of-type{border-top:0}
+summary{cursor:pointer;font-weight:800;min-height:32px}
+.note{font-size:14px;color:var(--dim)}
+form{display:flex;flex-direction:column;gap:10px}
+input{font:inherit;padding:14px;border-radius:12px;border:1px solid var(--line);background:#0a1735;color:var(--txt);min-height:48px}
+input::placeholder{color:#6f86bd}
+.ad{border:1px dashed var(--dim);border-radius:14px;padding:14px;font-size:14px;color:var(--dim)}
+footer{font-size:13px;color:#7f93c4;margin-top:26px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#fff;color:var(--navy);padding:10px 18px;border-radius:12px;font-weight:800;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.on{opacity:1}
+@media (min-width:700px){body{font-size:18px}h1{font-size:38px}}
+.toc{margin:0;padding-left:20px}.toc li{padding:4px 0}a{color:var(--yel)}.tbl{width:100%;border-collapse:collapse;font-size:15px}.tbl th,.tbl td{border-top:1px solid var(--line);padding:8px 6px;text-align:left;vertical-align:top}.tbl td:first-child{font-weight:800;white-space:nowrap}.src{padding-left:20px;margin:0 0 12px}.src li{padding:3px 0}
+</style></head><body><div class="wrap">
+<header><div class="logo"><i>AI</i>야근</div><div class="brand">AI 모르면 야근 · @yageun.ai</div></header>
+<span class="tag">Opus 5.5로 한 번에 만들었다</span>
+<h1>엉망 엑셀이 클릭되는 대시보드로</h1>
+<p class="lead">Claude Opus 5.5에 프롬프트 한 번 보내서 만든 매출 대시보드. 실제로 보낸 프롬프트 원문, 원본 가상 엑셀, 결과 파일 그대로.</p>
+<div class="card"><h2>실제로 보낸 프롬프트 (그대로)</h2>
+<p class="meta">Claude Code · 모델 claude-opus-5-5 · 프롬프트 1번 · 결과물 손으로 고치지 않음</p>
+<pre id="p">이 폴더에 있는 엑셀 파일(2026_3분기_매출_최종_진짜최종.xlsx) 좀 살려줘.
+날짜 형식도 제각각이고, 지역 이름도 뒤죽박죽이고, 중복 행이랑 중간 합계 줄도 섞여 있고, 매출 빈칸도 있어.
+
+1. 데이터를 깨끗하게 정리해줘 (뭘 어떻게 고쳤는지도 기록)
+2. 정리한 데이터로 임원 보고용 인터랙티브 대시보드를 HTML 파일 하나로 만들어줘
+   - 맨 위 핵심 숫자 카드(총매출, 판매수량, 전분기 대비 같은 거 말고 데이터에 있는 것만)
+   - 월별 매출 추이, 지역별·제품별 비교, 영업사원 순위
+   - 월/지역/제품 필터를 누르면 모든 차트가 같이 바뀌게
+   - 데이터 정리 내역도 한 섹션으로 보여주기
+   - 세로 폰 화면에서도 보기 좋게, 숫자가 올라가는 애니메이션, 깔끔한 다크 테마
+3. 데이터는 HTML 안에 넣어서 파일 하나만 열면 되게
+
+dashboard.html로 저장해줘.</pre>
+<button onclick="navigator.clipboard.writeText(document.getElementById('p').innerText).then(()=>{this.innerText='복사됨 ✓'})">프롬프트 복사</button></div>
+<div class="card"><h2>따라 하기</h2><ol class="steps">
+<li>Claude Code(또는 claude.ai)를 열고 모델을 Opus 5.5로 골라요.</li>
+<li>파일이 필요한 프롬프트는 파일을 같은 폴더에 두거나 대화창에 첨부해요.</li>
+<li>나온 HTML 파일을 브라우저로 열면 끝이에요. 결과는 매번 조금씩 달라요.</li></ol>
+<p class="note">이 프롬프트는 엑셀 파일을 같은 폴더에서 읽어요. 영상에 쓴 가상 엑셀: <a href="sample.xlsx" style="color:var(--yel)">sample.xlsx 받기</a> (파일 이름을 프롬프트 속 이름으로 바꾸거나, 프롬프트의 파일 이름을 고쳐 쓰세요)</p><p><a href="dashboard.html" style="color:var(--yel);font-weight:800">▶ 실제 결과물 열어보기</a> <span class="note">(Opus 5.5가 만든 파일 그대로, 수정 없음)</span></p></div>
+<p class="note">회사 이름·숫자는 전부 가상 데이터예요. 회사 자료는 넣기 전에 사내 보안 규정부터 확인하세요. Opus 5.5를 쓸 수 있는 요금제는 Claude 공식 요금제 페이지에서 확인하세요.</p>
+<p class="note"><a href="/" style="color:var(--dim)">← 다른 프롬프트 보기</a></p>
+</div></body></html>
