@@ -59,6 +59,7 @@ footer{font-size:13px;color:#7f93c4;margin-top:26px}
     <li><a href="#cowork">클로드 코워크 · 첫날 써볼 프롬프트 5개</a></li>
     <li><a href="#c1-week">이번 주 모르면 야근 10/12 · 공식 출처 5개 + 요약표</a></li>
     <li><a href="#gemini-free">무료 제미나이 · 덜 틀리게 쓰는 지시문 5개</a></li>
+    <li><a href="#excel-300">엑셀 정리 맡겼더니 · 지시문 5개 + 공식 출처</a></li>
     <li><a href="#free-buzz">공짜 AI 도구 Buzz · 다운로드 링크 + 회의록 지시문</a></li>
   </ul>
 </nav>
@@ -190,6 +191,36 @@ footer{font-size:13px;color:#7f93c4;margin-top:26px}
   <pre id="b1">이 회의 받아쓰기에서 결정된 것과 할 일만 뽑아 표로 만들어 줘. 열: 할 일 / 담당 / 마감 / 원문 근거 문장. 담당·마감이 없으면 "미정". 받아쓰기라 틀린 단어가 있을 수 있으니, 숫자와 사람 이름은 "확인 필요"로 표시해 줘.</pre>
   <button type="button" data-copy="b1">복사</button>
   <p class="note">회의 녹음은 참석자에게 먼저 알리고 하세요. 광고·제휴 아니에요.</p>
+</section>
+
+<section class="card" id="excel-300">
+  <span class="tag">맡겼더니 · 엑셀 정리</span>
+  <h2>거래처 엑셀 정리 지시문 5개</h2>
+  <p class="meta">엑셀 '중복 제거'는 셀에 표시된 값이 정확히 같은 줄만 지워요. 1과 1.00처럼 표시 형식이 다르면 중복이 아니에요. 영구 삭제라 누르기 전에 원본 시트를 복사해 두세요.</p>
+  <details open><summary>1/5 엑셀 정리 (새 시트 3개)</summary>
+    <pre id="x1">첨부한 거래처 엑셀을 정리해 줘. 원본 시트는 그대로 두고 새 시트 3개를 더해서 엑셀 파일로 줘.
+1) [정리본] 같은 회사인데 표기만 다른 것((주), ㈜, 띄어쓰기)은 하나로 합치고, 금액은 원 단위 숫자로, 날짜는 2026-10-02 형식으로 통일해 줘.
+2) [고친 목록] 바꾼 칸마다 행 번호 / 원래 값 / 바꾼 값 / 이유를 적어 줘.
+3) [확인 필요] 빈칸이나 애매한 건 지어내지 말고 여기에 모아 줘.</pre>
+    <button type="button" data-copy="x1">복사</button></details>
+  <details><summary>2/5 거래처 이름만 통일</summary>
+    <pre id="x2">이 엑셀의 거래처명 열에서 같은 회사로 보이는 표기를 묶어 표로 보여 줘. 열: 원래 표기 / 통일할 이름 / 근거(사업자번호 등). 확신 없는 건 "확인 필요"라고 적어 줘.</pre>
+    <button type="button" data-copy="x2">복사</button></details>
+  <details><summary>3/5 금액 단위 통일</summary>
+    <pre id="x3">금액 열에서 원 단위 숫자가 아닌 칸(만, 백만, 원, 기호)을 찾아 원 단위 숫자로 바꾼 새 열을 만들어 줘. 원래 값은 옆 열에 남겨 줘.</pre>
+    <button type="button" data-copy="x3">복사</button></details>
+  <details><summary>4/5 날짜 통일</summary>
+    <pre id="x4">날짜 열을 2026-10-02 형식으로 통일하고, 연도가 없는 날짜는 바꾸지 말고 "확인 필요"로 표시해 줘.</pre>
+    <button type="button" data-copy="x4">복사</button></details>
+  <details><summary>5/5 정리 후 검산</summary>
+    <pre id="x5">원본 시트와 정리본 시트의 금액 합계·행 수를 비교하고, 차이가 나는 이유를 행 번호와 함께 적어 줘.</pre>
+    <button type="button" data-copy="x5">복사</button></details>
+  <p class="meta" style="margin-top:12px">공식 출처 (2026-10-12 확인)</p>
+  <ul class="src">
+    <li><a href="https://support.microsoft.com/ko-kr/excel/filter-for-or-remove-duplicate-values" rel="noopener">Microsoft 지원 · 중복 값 필터링 또는 제거</a></li>
+    <li><a href="https://support.claude.com/en/articles/12111783-create-and-edit-files-with-claude" rel="noopener">Claude 도움말 · Create and edit files with Claude (무료 플랜 포함, 파일 30MB까지)</a></li>
+  </ul>
+  <p class="note">영상 속 표는 가상 거래처 예시예요. 회사 파일은 보안 규정 확인 후 사용하세요. 광고·제휴 아니에요.</p>
 </section>
 
 <section class="card" id="newsletter">
